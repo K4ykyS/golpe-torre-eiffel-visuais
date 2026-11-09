@@ -173,12 +173,12 @@ export function Room({tx}: {tx: Tex}) {
       <Chair position={[2.5, 0, -1.35]} />
 
       {/* adereços na mesa */}
-      <group position={[0.35, 0.76, -0.4]}>
+      <group position={[0.7, 0.76, -0.5]}>
         <Cyl r={0.05} h={0.04} position={[0, 0.02, 0]} color="#1f1a1a" />
         <Cyl r={0.012} h={0.3} position={[0.0, 0.2, 0]} color="#d4a63c" />
         <Cyl r={0.12} rb={0.19} h={0.2} seg={16} position={[0, 0.42, 0]} color="#f6e7b8" emissive="#ffe29a" />
       </group>
-      <group position={[2.3, 0.76, -0.42]}>
+      <group position={[3.15, 0.76, -0.3]}>
         <Cyl r={0.05} h={0.04} position={[0, 0.02, 0]} color="#1f1a1a" />
         <Cyl r={0.012} h={0.3} position={[0.0, 0.2, 0]} color="#d4a63c" />
         <Cyl r={0.12} rb={0.19} h={0.2} seg={16} position={[0, 0.42, 0]} color="#f6e7b8" emissive="#ffe29a" />
@@ -207,7 +207,7 @@ export function Limb3D({a, b, color, skin = '#f0c6a0', r = 0.055, hand = true}: 
       <group position={mid.toArray() as any} quaternion={q} scale={[1, len, 1]}>
         <Inked geo={geo} color={color} line={0.01 / Math.max(len, 0.3)} />
       </group>
-      {hand && <Sph r={r * 1.2} position={b} color={skin} line={0.008} />}
+      {hand && <Sph r={r * 0.95} position={b} color={skin} line={0.008} />}
       <Sph r={r * 1.08} position={vb.clone().lerp(va, 0.04).toArray() as any} color="#f3eedc" line={0.006} noInk />
     </group>
   );

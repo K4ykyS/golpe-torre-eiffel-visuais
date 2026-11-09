@@ -96,7 +96,7 @@ export function Billboard({
     return tx;
   }, [canvas]);
   t.needsUpdate = true;
-  const w = height * 0.6;
+  const w = height * (1000 / 1200);
   return (
     <mesh position={position} rotation={[0, yaw, 0]} scale={[flip ? -1 : 1, 1, 1]}>
       <planeGeometry args={[w, height]} />

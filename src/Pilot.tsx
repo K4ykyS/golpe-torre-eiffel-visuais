@@ -10,7 +10,7 @@ import {Limb3D, Room, makeTextures, Tex} from './world';
 import {drawCharacter, EMPRESARIO_A, EMPRESARIO_B, LUSTIG, POISSON, Look, State, DW, DH} from './toon';
 import {FPS, SHOTS, blink, camAt, envelopeX, envelopeZ, bundleX, bundleZ, key, keyv, pick, ramp, shotAt, outCubic, sm, lerp} from './story';
 
-const SCALE = 2.5;
+const SCALE = 2.0;
 const CARD_H = 1.8;
 
 function useCanvas() {
@@ -44,7 +44,7 @@ function Actor({look, state, pos, cam, flip = false}: {look: Look; state: State;
   const canvas = useCanvas();
   const ctx = canvas.getContext('2d')!;
   drawCharacter(ctx, look, state, SCALE);
-  return <Billboard canvas={canvas} position={[pos[0], pos[1] + CARD_H * 0.5 - 0.0, pos[2]]} height={CARD_H} yaw={yawTo(cam, pos)} flip={flip} tint="#fff2de" />;
+  return <Billboard canvas={canvas} position={[pos[0], pos[1] + CARD_H * 0.5 - 0.0, pos[2]]} height={CARD_H * 1.2} yaw={yawTo(cam, pos)} flip={flip} tint="#fff2de" />;
 }
 
 export const Pilot: React.FC = () => {
@@ -70,7 +70,7 @@ function Scene({t, tx}: {t: number; tx: Tex}) {
   // ---------- Lustig (de pé, à esquerda; a janela com a Torre fica atrás dele)
   const lustigDip = key(t, [[4.3, 0], [4.75, 0.2], [5.15, 0.2], [5.6, 0], [9.2, 0], [9.6, 0.1], [10.1, 0.0]]);
   const lustig: State = {
-    expr: pick(t, [[0, 'astuto'], [2.9, 'sorriso'], [4.5, 'astuto'], [9.7, 'sorriso']] as any),
+    expr: pick(t, [[0, 'confiante'], [2.9, 'sorriso'], [4.5, 'confiante'], [9.7, 'sorriso']] as any),
     look: keyv(t, [[0, [0.8, 0]], [1.4, [0.8, 0]], [1.7, [0.9, -0.4]], [2.9, [0.9, -0.4]], [3.2, [0.8, 0]], [4.4, [0.5, 0.7]], [5.3, [0.9, 0]], [9.2, [0.9, 0.1]], [9.6, [0.2, 0.4]], [10.0, [0, 0]]]) as any,
     turn: key(t, [[0, 0.5], [1.5, 0.5], [1.9, 0.6], [3.0, 0.6], [3.4, 0.6], [9.5, 0.6], [10.0, 0]]),
     blink: blink(t, 0.4, 2.7),
@@ -102,7 +102,7 @@ function Scene({t, tx}: {t: number; tx: Tex}) {
     look: keyv(t, [[0, [-0.8, 0]], [3.0, [-0.8, 0]], [4.6, [-0.6, 0.7]], [5.9, [-0.2, 0.9]], [6.15, [-0.9, 0.7]], [6.5, [0.9, 0.75]], [6.9, [-0.9, 0.75]], [7.1, [0.7, 0.2]], [8.2, [-0.5, 0.1]], [9.2, [-0.9, 0.5]]]) as any,
     turn: key(t, [[0, -0.5], [4.5, -0.3], [6.1, 0], [8.5, -0.5]]),
     blink: blink(t, 0.2, 2.2),
-    aL: keyv(t, [[0, [-18, -30]], [5.7, [-18, -30]], [6.0, [-30, -48]], [8.3, [-30, -48]], [8.9, [-60, -88]], [9.7, [-34, -60]], [10.2, [-18, -30]]]) as any,
+    aL: keyv(t, [[0, [-18, -30]], [5.7, [-18, -30]], [6.0, [-30, -48]], [8.3, [-30, -48]], [8.9, [-40, -72]], [9.7, [-30, -52]], [10.2, [-18, -30]]]) as any,
     aR: keyv(t, [[0, [18, 28]], [5.6, [18, 28]], [6.15, [10, -140]], [8.2, [10, -140]], [8.7, [24, 40]], [9.2, [20, 30]]]) as any,
     lean: key(t, [[0, 0], [4.8, 3], [5.9, -6], [7.4, -3], [8.5, 4], [9.8, 0]]),
     bob: key(t, [[0, 0], [5.0, 0], [5.1, 10], [5.4, 0], [7.4, 0], [7.55, 14], [7.9, 0], [9.3, 4], [9.8, 0]]) + Math.sin(t * 2) * 3,
@@ -169,7 +169,7 @@ function Scene({t, tx}: {t: number; tx: Tex}) {
           </mesh>
           {stampPopped && (
             <mesh rotation={[-Math.PI / 2, 0, 0.08]} position={[0.08, 0.003, -0.02]} scale={[popS, popS, 1]}>
-              <planeGeometry args={[0.44, 0.22]} />
+              <planeGeometry args={[0.36, 0.18]} />
               <meshBasicMaterial map={tx.carimbo} transparent />
             </mesh>
           )}
@@ -178,7 +178,7 @@ function Scene({t, tx}: {t: number; tx: Tex}) {
               <Cyl r={0.07} h={0.05} position={[0, 0.025, 0]} color="#3b2a1a" />
               <Cyl r={0.03} h={0.16} position={[0, 0.13, 0]} color="#5a3a22" />
               <Sph r={0.06} position={[0, 0.22, 0]} color="#5a3a22" />
-              <Limb3D a={[-0.42, 0.62, 0.2]} b={[0, 0.27, 0]} color="#4a4f66" r={0.045} />
+              <Limb3D a={[-0.03, 1.1, 0.03]} b={[0, 0.27, 0]} color="#4a4f66" r={0.05} />
             </group>
           )}
         </group>
@@ -187,10 +187,10 @@ function Scene({t, tx}: {t: number; tx: Tex}) {
         {showEnv && (
           <group position={envPos} rotation={[0, envRot, 0]}>
             <mesh rotation={[-Math.PI / 2, 0, 0]}>
-              <planeGeometry args={[0.44, 0.3]} />
+              <planeGeometry args={[0.52, 0.35]} />
               <meshBasicMaterial map={tx.envelope} />
             </mesh>
-            <Box size={[0.44, 0.012, 0.3]} position={[0, -0.006, 0]} color="#e8d7a8" line={0.006} />
+            <Box size={[0.52, 0.012, 0.35]} position={[0, -0.006, 0]} color="#e8d7a8" line={0.006} />
           </group>
         )}
 
@@ -234,8 +234,8 @@ function Scene({t, tx}: {t: number; tx: Tex}) {
               <planeGeometry args={[0.43, 0.59]} />
               <meshBasicMaterial map={tx.proposta} side={THREE.DoubleSide} />
             </mesh>
-            <Limb3D a={[-0.42, -0.55, 0.0]} b={[-0.2, -0.22, 0.02]} color="#7a5a3e" skin="#eab48e" />
-            <Limb3D a={[0.42, -0.55, 0.0]} b={[0.2, -0.22, 0.02]} color="#7a5a3e" skin="#eab48e" />
+            <Limb3D a={[-0.42, -0.55, 0.0]} b={[-0.2, -0.22, 0.02]} color="#7a5a3e" skin="#eab48e" r={0.04} />
+            <Limb3D a={[0.42, -0.55, 0.0]} b={[0.2, -0.22, 0.02]} color="#7a5a3e" skin="#eab48e" r={0.04} />
           </group>
         )}
       </ThreeCanvas>

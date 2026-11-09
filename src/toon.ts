@@ -1,10 +1,10 @@
 // Personagens 2D (proporções adultas ~7 cabeças) desenhados em Canvas2D, com contorno de tinta.
 // Canvas de projeto: 600 x 1000. Solas em y = 975. Ângulos: 0 = pendurado, 90 = aponta p/ direita da tela, 180 = para cima.
 export const INK = '#241726';
-export const DW = 600;
-export const DH = 1000;
+export const DW = 1000; // tela do cartão: 200 px de margem de cada lado (braços esticados não são cortados)
+export const DH = 1200; // 100 px de margem em cima e embaixo
 
-export type Expr = 'neutro' | 'astuto' | 'surpreso' | 'encantado' | 'preocupado' | 'lendo' | 'sorriso';
+export type Expr = 'confiante' | 'neutro' | 'astuto' | 'surpreso' | 'encantado' | 'preocupado' | 'lendo' | 'sorriso';
 
 export type Look = {
   skin: string;
@@ -69,19 +69,24 @@ function limb(
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.strokeStyle = INK;
-  ctx.lineWidth = w + 11;
-  ctx.beginPath();
-  ctx.moveTo(sx, sy);
-  ctx.lineTo(ex, ey);
-  ctx.lineTo(hx, hy);
-  ctx.stroke();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = w;
-  ctx.beginPath();
-  ctx.moveTo(sx, sy);
-  ctx.lineTo(ex, ey);
-  ctx.lineTo(hx, hy);
-  ctx.stroke();
+  const seg = (x0: number, y0: number, x1: number, y1: number, ww: number) => {
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = ww + 11;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+  };
+  const segc = (x0: number, y0: number, x1: number, y1: number, ww: number) => {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = ww;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+  };
+  seg(sx, sy, ex, ey, w * 1.12);
+  seg(ex, ey, hx, hy, w * 0.82);
+  segc(sx, sy, ex, ey, w * 1.12);
+  segc(ex, ey, hx, hy, w * 0.82);
+  // dobra do cotovelo
+  ctx.strokeStyle = 'rgba(20,10,30,0.35)';
+  ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.arc(ex, ey, w * 0.42, 0.2, 2.6); ctx.stroke();
   return { hx, hy, ex, ey };
 }
 
@@ -152,7 +157,7 @@ function drawHead(ctx: CanvasRenderingContext2D, L: Look, S: State, cx: number, 
   const eyeY = cy - 6;
   const ex = hw * 0.42;
   const e = S.expr;
-  const open = (e === 'surpreso' ? 1.25 : e === 'astuto' ? 0.62 : e === 'lendo' ? 0.7 : e === 'encantado' ? 0.8 : e === 'sorriso' ? 0.78 : 1) * (1 - S.blink);
+  const open = (e === 'surpreso' ? 1.12 : e === 'confiante' ? 0.9 : e === 'astuto' ? 0.62 : e === 'lendo' ? 0.7 : e === 'encantado' ? 0.8 : e === 'sorriso' ? 0.78 : 1) * (1 - S.blink);
   const sweatDrop = S.sweat ?? 0;
 
   // sobrancelhas
@@ -161,6 +166,7 @@ function drawHead(ctx: CanvasRenderingContext2D, L: Look, S: State, cx: number, 
   let browTilt = 0; // + = ponta interna para cima (preocupado)
   if (e === 'surpreso') { browLift = -16; browTilt = 0; }
   if (e === 'astuto') { browLift = -2; browTilt = -0.28; }
+  if (e === 'confiante') { browLift = -7; browTilt = -0.1; }
   if (e === 'preocupado') { browLift = -9; browTilt = 0.38; }
   if (e === 'encantado') { browLift = -9; browTilt = 0.1; }
   if (e === 'lendo') { browLift = 0; browTilt = 0.1; }
@@ -183,7 +189,7 @@ function drawHead(ctx: CanvasRenderingContext2D, L: Look, S: State, cx: number, 
     ctx.fillStyle = '#fbf7ee';
     ink(ctx, 5);
     ctx.beginPath();
-    ctx.ellipse(ox, eyeY, 16, 13 * Math.max(open, 0.06), 0, 0, Math.PI * 2);
+    ctx.ellipse(ox, eyeY, 14, 11.5 * Math.max(open, 0.06), 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     if (open > 0.15) {
@@ -191,7 +197,7 @@ function drawHead(ctx: CanvasRenderingContext2D, L: Look, S: State, cx: number, 
       const px = ox + S.look[0] * 8;
       const py = eyeY + S.look[1] * 6;
       ctx.beginPath();
-      ctx.arc(px, py, e === 'surpreso' ? 5 : 7, 0, Math.PI * 2);
+      ctx.arc(px, py, e === 'surpreso' ? 4 : 6, 0, Math.PI * 2);
       ctx.fill();
     }
     if (e === 'astuto' || e === 'lendo') {
@@ -284,6 +290,11 @@ function drawHead(ctx: CanvasRenderingContext2D, L: Look, S: State, cx: number, 
     ctx.quadraticCurveTo(mxc, mouthY + 12, mxc - 22, mouthY + 3);
     ctx.closePath();
     ctx.fill();
+  } else if (e === 'confiante') {
+    ctx.beginPath();
+    ctx.moveTo(mxc - 26, mouthY - 2);
+    ctx.quadraticCurveTo(mxc, mouthY + 16, mxc + 26, mouthY - 4);
+    ctx.stroke();
   } else if (e === 'astuto') {
     ctx.beginPath();
     ctx.moveTo(mxc - 24, mouthY + 4);
@@ -365,8 +376,9 @@ function drawProp(ctx: CanvasRenderingContext2D, S: State, hx: number, hy: numbe
 }
 
 export function drawCharacter(ctx: CanvasRenderingContext2D, L: Look, S: State, scale: number) {
-  ctx.setTransform(scale, 0, 0, scale, 0, 0);
-  ctx.clearRect(0, 0, DW, DH);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  ctx.setTransform(scale, 0, 0, scale, 200 * scale, 100 * scale);
   const cx = 300;
   const B = L.build;
   const sh = 120 * B; // meia largura de ombros

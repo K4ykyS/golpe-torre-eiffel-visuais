@@ -60,7 +60,7 @@ export const bundleX = (t: number) => 1.85 - 2.2 * outCubic((t - 8.95) / 0.95);
 export const bundleZ = (t: number) => -0.1 + 0.25 * outCubic((t - 8.95) / 0.95);
 
 export const SHOTS: Shot[] = [
-  {id: 'geral', a: 0, b: 1.5, cam: lin(0, 1.5, {p: [0.4, 1.55, 6.6], l: [0.42, 1.32, -1], fov: 56, roll: 1.2}, {p: [0.5, 1.5, 5.7], l: [0.45, 1.34, -1], fov: 54, roll: -0.6})},
+  {id: 'geral', a: 0, b: 1.5, cam: lin(0, 1.5, {p: [0.4, 1.4, 6.6], l: [0.42, 1.1, -1], fov: 56, roll: 1.2}, {p: [0.5, 1.4, 5.7], l: [0.45, 1.12, -1], fov: 54, roll: -0.6})},
   {id: 'lustig-torre', a: 1.5, b: 3.05, cam: lin(1.5, 3.05, {p: [0.7, 1.3, 3.6], l: [-1.2, 1.55, -0.5], fov: 44, roll: 3}, {p: [0.3, 1.35, 3.1], l: [-1.35, 1.6, -1.2], fov: 41, roll: 1})},
   {id: 'carimbo', a: 3.05, b: 4.4, cam: lin(3.05, 4.4, {p: [0.1, 2.0, 1.7], l: [0.5, 0.78, 0.05], fov: 40, roll: -3}, {p: [0.35, 1.7, 1.3], l: [0.52, 0.78, 0.05], fov: 38, roll: -1})},
   {
@@ -70,7 +70,7 @@ export const SHOTS: Shot[] = [
     cam: (t) => {
       const x = envelopeX(t + 0.12);
       const u = glide((t - 4.4) / 1.7);
-      return {p: [lerp(-0.55, x + 0.35, u), 1.0, 2.6], l: [lerp(-0.35, x + 0.05, u), 0.82, -0.4], fov: 44, roll: lerp(-2, 2, u)};
+      return {p: [lerp(-0.4, x + 0.35, u), 1.6, lerp(3.0, 2.7, u)], l: [lerp(-0.85, x + 0.1, u), 1.15, -0.3], fov: lerp(40, 42, u), roll: lerp(-2.5, 2, u)};
     },
   },
   {id: 'poisson-le', a: 6.1, b: 7.55, cam: lin(6.1, 7.55, {p: [1.5, 1.32, 0.75], l: [1.3, 1.22, -1], fov: 29, roll: 3.5}, {p: [1.4, 1.3, 0.55], l: [1.3, 1.22, -1], fov: 26, roll: 2})},
@@ -82,7 +82,9 @@ export const SHOTS: Shot[] = [
     cam: (t) => {
       const x = bundleX(t + 0.05);
       const u = glide((t - 8.75) / 1.2);
-      return {p: [x + 0.95, lerp(1.15, 1.0, u), 2.5], l: [x - 0.05, 0.8, -0.1], fov: 46, roll: lerp(3, -2, u)};
+      const w = ramp(t, 9.3, 9.95);
+      const lx = lerp(x - 0.05, -0.8, w);
+      return {p: [lx + 0.9, 1.5, 2.8], l: [lx, lerp(1.0, 1.15, w), -0.2], fov: 44, roll: lerp(3, -2, u)};
     },
   },
   {id: 'lustig-sorri', a: 9.95, b: 10.5, cam: lin(9.95, 10.5, {p: [-0.75, 1.55, 1.75], l: [-1.12, 1.6, 0], fov: 27, roll: -3}, {p: [-0.9, 1.58, 1.4], l: [-1.12, 1.62, 0], fov: 24, roll: -1.5})},
