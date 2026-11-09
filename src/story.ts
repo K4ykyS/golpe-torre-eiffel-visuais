@@ -60,34 +60,40 @@ export const bundleX = (t: number) => 1.85 - 2.2 * outCubic((t - 8.95) / 0.95);
 export const bundleZ = (t: number) => -0.1 + 0.25 * outCubic((t - 8.95) / 0.95);
 
 export const SHOTS: Shot[] = [
-  {id: 'geral', a: 0, b: 1.5, cam: lin(0, 1.5, {p: [0.4, 1.4, 6.6], l: [0.42, 1.1, -1], fov: 56, roll: 1.2}, {p: [0.5, 1.4, 5.7], l: [0.45, 1.12, -1], fov: 54, roll: -0.6})},
-  {id: 'lustig-torre', a: 1.5, b: 3.05, cam: lin(1.5, 3.05, {p: [0.7, 1.3, 3.6], l: [-1.2, 1.55, -0.5], fov: 44, roll: 3}, {p: [0.3, 1.35, 3.1], l: [-1.35, 1.6, -1.2], fov: 41, roll: 1})},
-  {id: 'carimbo', a: 3.05, b: 4.4, cam: lin(3.05, 4.4, {p: [0.1, 2.0, 1.7], l: [0.5, 0.78, 0.05], fov: 40, roll: -3}, {p: [0.35, 1.7, 1.3], l: [0.52, 0.78, 0.05], fov: 38, roll: -1})},
+  // 1. PLANO GERAL — Lustig, A e Poisson legíveis; teto com o lustre, piso só no rodapé
+  {id: 'geral', a: 0, b: 1.5, cam: lin(0, 1.5, {p: [-0.25, 1.5, 6.9], l: [-0.25, 1.75, -1], fov: 52, roll: 1}, {p: [-0.2, 1.45, 6.0], l: [-0.2, 1.65, -1], fov: 50, roll: -0.5})},
+  // 2. MÉDIO — Lustig aponta para a janela (corpo inteiro até a cintura)
+  {id: 'lustig-torre', a: 1.5, b: 3.05, cam: lin(1.5, 3.05, {p: [0.3, 1.3, 3.9], l: [-1.0, 1.3, 0], fov: 34, roll: 2.5}, {p: [-0.1, 1.3, 3.5], l: [-1.15, 1.35, 0], fov: 31, roll: 1})},
+  // 3. DETALHE — carimbo na planta, com A e Poisson reagindo ao fundo
+  {id: 'carimbo', a: 3.05, b: 4.4, cam: lin(3.05, 4.4, {p: [0.65, 1.9, 2.5], l: [0.62, 0.95, -0.4], fov: 40, roll: -2}, {p: [0.65, 1.7, 2.1], l: [0.62, 0.95, -0.4], fov: 38, roll: -1})},
+  // 4. MÉDIO — acompanha o envelope de Lustig até Poisson
   {
     id: 'desliza',
     a: 4.4,
     b: 6.1,
     cam: (t) => {
-      const x = envelopeX(t + 0.12);
       const u = glide((t - 4.4) / 1.7);
-      return {p: [lerp(-0.4, x + 0.35, u), 1.6, lerp(3.0, 2.7, u)], l: [lerp(-0.85, x + 0.1, u), 1.15, -0.3], fov: lerp(40, 42, u), roll: lerp(-2.5, 2, u)};
+      const lx = lerp(-0.85, 1.0, u);
+      return {p: [lx, 1.15, 3.1], l: [lx, 1.1, -0.2], fov: 40, roll: lerp(-2, 2, u)};
     },
   },
-  {id: 'poisson-le', a: 6.1, b: 7.55, cam: lin(6.1, 7.55, {p: [1.5, 1.32, 0.75], l: [1.3, 1.22, -1], fov: 29, roll: 3.5}, {p: [1.4, 1.3, 0.55], l: [1.3, 1.22, -1], fov: 26, roll: 2})},
-  {id: 'carta', a: 7.55, b: 8.75, cam: lin(7.55, 8.75, {p: [1.0, 1.1, 1.9], l: [1.3, 1.05, 0.1], fov: 38, roll: -2}, {p: [1.55, 1.12, 1.6], l: [1.3, 1.06, 0.1], fov: 34, roll: 1})},
+  // 5. CLOSE — Poisson lê e reage (rosto inteiro no quadro)
+  {id: 'poisson-le', a: 6.1, b: 7.55, cam: lin(6.1, 7.55, {p: [1.35, 1.12, 1.2], l: [1.3, 1.0, -1], fov: 29, roll: 3}, {p: [1.3, 1.1, 1.05], l: [1.3, 1.0, -1], fov: 26, roll: 1.5})},
+  // 6. DETALHE — a carta (texto legível) com as mãos
+  {id: 'carta', a: 7.55, b: 8.75, cam: lin(7.55, 8.75, {p: [1.0, 1.05, 1.9], l: [1.3, 1.0, 0.1], fov: 40, roll: -2}, {p: [1.55, 1.07, 1.65], l: [1.3, 1.0, 0.1], fov: 36, roll: 1})},
+  // 7. MÉDIO — o pagamento atravessa a mesa e chega a Lustig
   {
     id: 'pagamento',
     a: 8.75,
     b: 9.95,
     cam: (t) => {
-      const x = bundleX(t + 0.05);
       const u = glide((t - 8.75) / 1.2);
-      const w = ramp(t, 9.3, 9.95);
-      const lx = lerp(x - 0.05, -0.8, w);
-      return {p: [lx + 0.9, 1.5, 2.8], l: [lx, lerp(1.0, 1.15, w), -0.2], fov: 44, roll: lerp(3, -2, u)};
+      const cx = lerp(1.6, -0.6, u);
+      return {p: [cx, 1.15, 3.1], l: [cx, 1.1, -0.2], fov: 40, roll: lerp(2.5, -1.5, u)};
     },
   },
-  {id: 'lustig-sorri', a: 9.95, b: 10.5, cam: lin(9.95, 10.5, {p: [-0.75, 1.55, 1.75], l: [-1.12, 1.6, 0], fov: 27, roll: -3}, {p: [-0.9, 1.58, 1.4], l: [-1.12, 1.62, 0], fov: 24, roll: -1.5})},
+  // 8. CLOSE — Lustig satisfeito
+  {id: 'lustig-sorri', a: 9.95, b: 10.5, cam: lin(9.95, 10.5, {p: [-1.05, 1.45, 2.3], l: [-1.15, 1.38, 0], fov: 29, roll: -3}, {p: [-1.1, 1.45, 2.0], l: [-1.15, 1.38, 0], fov: 25, roll: -1.5})},
 ];
 
 export function camAt(t: number): Cam {
