@@ -7,7 +7,8 @@ import {loadFont as loadElite} from '@remotion/google-fonts/SpecialElite';
 import {Box, Cyl} from './kit';
 import {Limb3D, Room, makeTextures, Tex} from './world';
 import {ParisSet, ScrapSet, TrainSet, makeTextures2, Tex2} from './sets';
-import {Actor, HotelPilot, Rig} from './Pilot';
+import {Actor, HotelPilot, LightCtx, Rig} from './Pilot';
+import {LIGHT_DAY, LIGHT_DUSK, LIGHT_HOTEL, LIGHT_TRAIN} from './toon2';
 import {
   EMPRESARIO_A, EMPRESARIO_C, EMPRESARIO_D, LUSTIG, LUSTIG_CHAPEU, OFICIAL_A, OFICIAL_B, POISSON, POISSON_CHAPEU, State,
 } from './toon';
@@ -22,6 +23,61 @@ const bl = (T: number, s: number) => blink(T, s, 2.6);
 const breathe = (T: number, s = 0) => Math.sin(T * 2 + s) * 3;
 type V3 = [number, number, number];
 
+// brilho de lâmpada (sprite aditivo) e poeira flutuando no ar
+const glowTex = (() => {
+  let t: THREE.Texture | null = null;
+  return () => {
+    if (t) return t;
+    const c = document.createElement('canvas');
+    c.width = c.height = 128;
+    const g = c.getContext('2d')!;
+    const r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    r.addColorStop(0, 'rgba(255,255,255,1)');
+    r.addColorStop(0.25, 'rgba(255,255,255,0.45)');
+    r.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = r;
+    g.fillRect(0, 0, 128, 128);
+    t = new THREE.CanvasTexture(c);
+    return t;
+  };
+})();
+function Glow({pos, size, color, amt}: {pos: V3; size: number; color: string; amt: number}) {
+  return (
+    <sprite position={pos} scale={[size, size, 1]}>
+      <spriteMaterial map={glowTex()} color={color} opacity={amt} blending={THREE.AdditiveBlending} depthWrite={false} transparent fog={false} />
+    </sprite>
+  );
+}
+function Dust({T, cam}: {T: number; cam: Cam}) {
+  const N = 70;
+  const geo = useMemo(() => new THREE.BufferGeometry(), []);
+  const pos = useMemo(() => new Float32Array(N * 3), []);
+  const seeds = useMemo(() => {
+    let s = 13;
+    const r = () => ((s = (s * 16807) % 2147483647) - 1) / 2147483646;
+    return Array.from({length: N}, () => [r(), r(), r(), r() * 0.5 + 0.2]);
+  }, []);
+  const dir = new THREE.Vector3(cam.l[0] - cam.p[0], cam.l[1] - cam.p[1], cam.l[2] - cam.p[2]).normalize();
+  for (let i = 0; i < N; i++) {
+    const [a, b, c, sp] = seeds[i];
+    const d = 1.2 + c * 5.5;
+    const lx = (a - 0.5) * d * 0.9;
+    const ly = (b - 0.5) * d * 1.3 + Math.sin(T * sp + i) * 0.12 - ((T * sp * 0.05 + i) % 1) * 0.0;
+    const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
+    const up = new THREE.Vector3().crossVectors(right, dir).normalize();
+    pos[i * 3] = cam.p[0] + dir.x * d + right.x * lx + up.x * ly + Math.sin(T * sp * 0.7 + i * 2) * 0.1;
+    pos[i * 3 + 1] = cam.p[1] + dir.y * d + right.y * lx + up.y * ly - ((T * 0.03 * (sp + 0.3) + a) % 0.4);
+    pos[i * 3 + 2] = cam.p[2] + dir.z * d + right.z * lx + up.z * ly + Math.cos(T * sp * 0.6 + i) * 0.1;
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.attributes.position.needsUpdate = true;
+  return (
+    <points geometry={geo} frustumCulled={false}>
+      <pointsMaterial color="#ffe6b8" size={0.035} transparent opacity={0.75} depthWrite={false} sizeAttenuation fog={false} />
+    </points>
+  );
+}
+
 // ---------- iluminação por cenário
 function Lights({set}: {set: 'hotel' | 'paris' | 'scrap' | 'train'}) {
   if (set === 'hotel')
@@ -29,11 +85,16 @@ function Lights({set}: {set: 'hotel' | 'paris' | 'scrap' | 'train'}) {
       <>
         <color attach="background" args={['#2a1b2e']} />
         <fog attach="fog" args={['#c9a07a', 9, 22]} />
-        <ambientLight intensity={1.15} color="#ffe6c4" />
-        <hemisphereLight args={['#ffd9a8', '#5a3a5e', 0.85]} />
-        <pointLight position={[1.0, 3.2, 0.2]} intensity={14} distance={12} color="#ffd89a" />
-        <pointLight position={[-1.6, 2.4, -3.2]} intensity={9} distance={9} color="#ffb070" />
-        <directionalLight position={[3, 3, 6]} intensity={1.0} color="#fff0d6" />
+        <ambientLight intensity={0.62} color="#c9c0ff" />
+        <hemisphereLight args={['#ffcf9a', '#2a2050', 0.5]} />
+        <pointLight position={[1.0, 3.2, 0.2]} intensity={19} distance={12} color="#ffc27a" />
+        <pointLight position={[-1.6, 2.4, -3.2]} intensity={10} distance={9} color="#ff9a5a" />
+        <pointLight position={[0.7, 1.4, -0.5]} intensity={5} distance={4} color="#ffd9a0" />
+        <directionalLight position={[3, 3, 6]} intensity={0.45} color="#d8d0ff" />
+        <Glow pos={[1.0, 3.62, -0.2]} size={3.2} color="#ffbf70" amt={0.8} />
+        <Glow pos={[0.7, 1.2, -0.5]} size={1.3} color="#ffc880" amt={0.85} />
+        <Glow pos={[3.15, 1.2, -0.3]} size={1.3} color="#ffc880" amt={0.85} />
+        <Glow pos={[-1.6, 2.15, -4.3]} size={4.2} color="#ffb06a" amt={0.35} />
       </>
     );
   if (set === 'train')
@@ -51,10 +112,10 @@ function Lights({set}: {set: 'hotel' | 'paris' | 'scrap' | 'train'}) {
     <>
       <color attach="background" args={['#ffd493']} />
       <fog attach="fog" args={[day ? '#ffe3b0' : '#ffcf9a', 70, 170]} />
-      <ambientLight intensity={day ? 1.25 : 1.05} color={day ? '#fff2d6' : '#ffe0c0'} />
-      <hemisphereLight args={['#ffd9a8', '#6a4a6a', 0.75]} />
-      <directionalLight position={[22, 12, -12]} intensity={day ? 1.2 : 1.8} color="#ffbf80" />
-      <directionalLight position={[0, 8, 18]} intensity={0.95} color="#fff0d6" />
+      <ambientLight intensity={day ? 1.0 : 0.72} color={day ? '#fff2d6' : '#d8c8ff'} />
+      <hemisphereLight args={['#ffcf9a', '#3a2a5a', 0.6]} />
+      <directionalLight position={[22, 12, -12]} intensity={day ? 1.1 : 1.7} color="#ffa860" />
+      <directionalLight position={[0, 8, 18]} intensity={0.55} color="#e8e0ff" />
     </>
   );
 }
@@ -465,6 +526,9 @@ const SHOTS: Shot[] = [
   },
 ];
 
+const PARIS_IDS = ['praca-aberta', 'contrato', 'torre-baixo', 'placa-torre', 'poisson-duvida', 'autoridades', 'correio', 'hotel-fachada', 'delegacia-aberta', 'poisson-vergonha', 'lustig-volta', 'paris-de-novo', 'torre-final'];
+const lightFor = (id: string) => (PARIS_IDS.includes(id) ? LIGHT_DUSK : id === 'ferro-velho' ? LIGHT_DAY : id.startsWith('trem') ? LIGHT_TRAIN : LIGHT_HOTEL);
+
 export const shotFor = (T: number) => SHOTS.find((s) => T >= s.a && T < s.b) ?? SHOTS[SHOTS.length - 1];
 
 function camFor(T: number): Cam {
@@ -499,8 +563,9 @@ function Grade({T}: {T: number}) {
   const fadeOut = ramp(T, FILM_LEN - 0.4, FILM_LEN);
   return (
     <>
-      <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 46%, rgba(0,0,0,0) 55%, rgba(20,8,24,0.55) 100%)', mixBlendMode: 'multiply'}} />
-      <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(255,170,90,0.10), rgba(60,20,90,0.14))', mixBlendMode: 'soft-light'}} />
+      <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 44%, rgba(0,0,0,0) 38%, rgba(6,4,22,0.82) 100%)'}} />
+      <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(110,120,200,0.16), rgba(70,40,120,0.10))', mixBlendMode: 'multiply'}} />
+      <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 60%, rgba(255,170,90,0.07), rgba(0,0,0,0) 65%)', mixBlendMode: 'screen'}} />
       <Titles T={T} />
       <AbsoluteFill style={{background: '#0d0814', opacity: fadeOut}} />
     </>
@@ -527,7 +592,10 @@ export const Film: React.FC = () => {
     <AbsoluteFill style={{background: '#150f1c'}}>
       <ThreeCanvas width={720} height={1280} camera={{position: cam.p, fov: cam.fov}} gl={{antialias: true, toneMapping: THREE.NoToneMapping}} style={{background: '#150f1c'}}>
         <Rig cam={cam} />
-        {shot.id === 'piloto' ? <HotelPilot t={T - PILOT_A} tx={tx} cam={cam} /> : shot.render({T, tx, tx2, cam})}
+        <LightCtx.Provider value={lightFor(shot.id)}>
+          {shot.id === 'piloto' ? <HotelPilot t={T - PILOT_A} tx={tx} cam={cam} /> : shot.render({T, tx, tx2, cam})}
+        </LightCtx.Provider>
+        <Dust T={T} cam={cam} />
       </ThreeCanvas>
       <Grade T={T} />
     </AbsoluteFill>

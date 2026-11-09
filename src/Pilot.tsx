@@ -5,8 +5,8 @@ import {useThree} from '@react-three/fiber';
 import * as THREE from 'three';
 import {loadFont as loadPlayfair} from '@remotion/google-fonts/PlayfairDisplay';
 import {loadFont as loadElite} from '@remotion/google-fonts/SpecialElite';
-import {Box, Cyl, Sph} from './kit';
-import {Character3D} from './rig3d';
+import {Billboard, Box, Cyl, Sph} from './kit';
+import {drawCharacter2, Light, LIGHT_HOTEL, DW2, DH2} from './toon2';
 import {Limb3D, Room, makeTextures, Tex} from './world';
 import {drawCharacter, EMPRESARIO_A, EMPRESARIO_B, LUSTIG, POISSON, Look, State, DW, DH} from './toon';
 import {FPS, SHOTS, blink, camAt, envelopeX, envelopeZ, bundleX, bundleZ, key, keyv, pick, ramp, shotAt, outCubic, sm, lerp} from './story';
@@ -17,8 +17,8 @@ const CARD_H = 1.8;
 function useCanvas() {
   return useMemo(() => {
     const c = document.createElement('canvas');
-    c.width = DW * SCALE;
-    c.height = DH * SCALE;
+    c.width = DW2 * SCALE;
+    c.height = DH2 * SCALE;
     return c;
   }, []);
 }
@@ -41,10 +41,42 @@ export function Rig({cam}: {cam: ReturnType<typeof camAt>}) {
 
 const yawTo = (cam: [number, number, number], p: [number, number, number]) => Math.atan2(cam[0] - p[0], cam[2] - p[2]);
 
-export function Actor({look, state, pos, cam, yaw}: {look: Look; state: State; pos: [number, number, number]; cam: [number, number, number]; flip?: boolean; yaw?: number}) {
-  const camYaw = yawTo(cam, pos);
-  const y = yaw === undefined ? camYaw : yaw * 0.85 + camYaw * 0.15;
-  return <Character3D look={look} state={state} pos={pos} yaw={y} />;
+export const LightCtx = React.createContext<Light>(LIGHT_HOTEL);
+
+const shadowTexture = (() => {
+  let t: THREE.Texture | null = null;
+  return () => {
+    if (t) return t;
+    const c = document.createElement('canvas');
+    c.width = c.height = 128;
+    const g = c.getContext('2d')!;
+    const r = g.createRadialGradient(64, 64, 4, 64, 64, 62);
+    r.addColorStop(0, 'rgba(6,2,18,0.62)');
+    r.addColorStop(1, 'rgba(6,2,18,0)');
+    g.fillStyle = r;
+    g.fillRect(0, 0, 128, 128);
+    t = new THREE.CanvasTexture(c);
+    return t;
+  };
+})();
+
+export function Actor({look, state, pos, cam, flip = false}: {look: Look; state: State; pos: [number, number, number]; cam: [number, number, number]; flip?: boolean; yaw?: number}) {
+  const light = React.useContext(LightCtx);
+  const canvas = useCanvas();
+  const ctx = canvas.getContext('2d')!;
+  drawCharacter2(ctx, look, state, SCALE, light);
+  const seated = pos[1] < -0.1;
+  return (
+    <>
+      {!seated && (
+        <mesh position={[pos[0], 0.014, pos[2]]} rotation-x={-Math.PI / 2} renderOrder={1}>
+          <planeGeometry args={[1.25, 0.6]} />
+          <meshBasicMaterial map={shadowTexture()} transparent depthWrite={false} />
+        </mesh>
+      )}
+      <Billboard canvas={canvas} position={[pos[0], pos[1] + CARD_H * 0.5 - 0.0, pos[2]]} height={CARD_H * 1.2} yaw={yawTo(cam, pos)} flip={flip} tint="#ffffff" />
+    </>
+  );
 }
 
 export function HotelPilot({t, tx, cam: camProp}: {t: number; tx: Tex; cam?: ReturnType<typeof camAt>}) {
@@ -138,7 +170,7 @@ export function HotelPilot({t, tx, cam: camProp}: {t: number; tx: Tex; cam?: Ret
         <Room tx={tx} />
 
         {/* personagens */}
-        <Actor look={LUSTIG} state={lustig} pos={[-1.15, 0, 0.0]} cam={camP} yaw={0.75} />
+        <Actor look={LUSTIG} state={lustig} pos={[-1.15, 0.045, 0.0]} cam={camP} />
         <Actor look={EMPRESARIO_A} state={A} pos={[0.1, 0.58 - 0.9, -1.0]} cam={camP} />
         <Actor look={POISSON} state={poisson} pos={[1.3, 0.58 - 0.9, -1.0]} cam={camP} />
         <Actor look={EMPRESARIO_B} state={B} pos={[2.5, 0.58 - 0.9, -1.0]} cam={camP} />
