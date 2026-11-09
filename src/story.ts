@@ -61,7 +61,7 @@ export const bundleZ = (t: number) => -0.1 + 0.25 * outCubic((t - 8.95) / 0.95);
 
 export const SHOTS: Shot[] = [
   // 1. PLANO GERAL — Lustig, A e Poisson legíveis; teto com o lustre, piso só no rodapé
-  {id: 'geral', a: 0, b: 1.5, cam: lin(0, 1.5, {p: [-0.25, 1.5, 6.9], l: [-0.25, 1.75, -1], fov: 52, roll: 1}, {p: [-0.2, 1.45, 6.0], l: [-0.2, 1.65, -1], fov: 50, roll: -0.5})},
+  {id: 'geral', a: 0, b: 1.5, cam: lin(0, 1.5, {p: [0.5, 1.5, 6.9], l: [-0.3, 1.75, -1], fov: 52, roll: 1}, {p: [0.45, 1.45, 6.0], l: [-0.25, 1.65, -1], fov: 50, roll: -0.5})},
   // 2. MÉDIO — Lustig aponta para a janela (corpo inteiro até a cintura)
   {id: 'lustig-torre', a: 1.5, b: 3.05, cam: lin(1.5, 3.05, {p: [0.3, 1.3, 3.9], l: [-1.0, 1.3, 0], fov: 34, roll: 2.5}, {p: [-0.1, 1.3, 3.5], l: [-1.15, 1.35, 0], fov: 31, roll: 1})},
   // 3. DETALHE — carimbo na planta, com A e Poisson reagindo ao fundo
