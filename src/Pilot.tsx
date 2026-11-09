@@ -22,7 +22,7 @@ function useCanvas() {
   }, []);
 }
 
-function Rig({cam}: {cam: ReturnType<typeof camAt>}) {
+export function Rig({cam}: {cam: ReturnType<typeof camAt>}) {
   const {camera} = useThree();
   useLayoutEffect(() => {
     const c = camera as THREE.PerspectiveCamera;
@@ -40,31 +40,15 @@ function Rig({cam}: {cam: ReturnType<typeof camAt>}) {
 
 const yawTo = (cam: [number, number, number], p: [number, number, number]) => Math.atan2(cam[0] - p[0], cam[2] - p[2]);
 
-function Actor({look, state, pos, cam, flip = false}: {look: Look; state: State; pos: [number, number, number]; cam: [number, number, number]; flip?: boolean}) {
+export function Actor({look, state, pos, cam, flip = false}: {look: Look; state: State; pos: [number, number, number]; cam: [number, number, number]; flip?: boolean}) {
   const canvas = useCanvas();
   const ctx = canvas.getContext('2d')!;
   drawCharacter(ctx, look, state, SCALE);
   return <Billboard canvas={canvas} position={[pos[0], pos[1] + CARD_H * 0.5 - 0.0, pos[2]]} height={CARD_H * 1.2} yaw={yawTo(cam, pos)} flip={flip} tint="#fff2de" />;
 }
 
-export const Pilot: React.FC = () => {
-  const frame = useCurrentFrame();
-  const t = frame / FPS;
-  const [ready, setReady] = useState(false);
-  const [handle] = useState(() => delayRender('fontes'));
-  useEffect(() => {
-    Promise.all([loadPlayfair('normal', {weights: ['400', '700'], subsets: ['latin', 'latin-ext']}).waitUntilDone(), loadElite('normal', {subsets: ['latin']}).waitUntilDone()]).then(() => {
-      setReady(true);
-      continueRender(handle);
-    });
-  }, [handle]);
-  const tx = useMemo<Tex | null>(() => (ready ? makeTextures() : null), [ready]);
-  if (!tx) return <AbsoluteFill style={{background: '#1b1220'}} />;
-  return <Scene t={t} tx={tx} />;
-};
-
-function Scene({t, tx}: {t: number; tx: Tex}) {
-  const cam = camAt(t);
+export function HotelPilot({t, tx, cam: camProp}: {t: number; tx: Tex; cam?: ReturnType<typeof camAt>}) {
+  const cam = camProp ?? camAt(t);
   const shot = shotAt(t);
 
   // ---------- Lustig (de pé, à esquerda; a janela com a Torre fica atrás dele)
@@ -142,9 +126,7 @@ function Scene({t, tx}: {t: number; tx: Tex}) {
   const letterY = key(t, [[7.55, 1.14], [8.2, 1.12], [8.75, 0.99]]);
 
   return (
-    <AbsoluteFill style={{background: '#150f1c'}}>
-      <ThreeCanvas width={720} height={1280} camera={{position: cam.p, fov: cam.fov}} gl={{antialias: true, toneMapping: THREE.NoToneMapping}} style={{background: '#150f1c'}}>
-        <Rig cam={cam} />
+    <>
         <color attach="background" args={['#2a1b2e']} />
         <fog attach="fog" args={['#c9a07a', 9, 22]} />
         <ambientLight intensity={1.15} color="#ffe6c4" />
@@ -238,12 +220,10 @@ function Scene({t, tx}: {t: number; tx: Tex}) {
             <Limb3D a={[0.42, -0.55, 0.0]} b={[0.2, -0.22, 0.02]} color="#7a5a3e" skin="#eab48e" r={0.04} />
           </group>
         )}
-      </ThreeCanvas>
-
-      <Grade t={t} />
-    </AbsoluteFill>
+    </>
   );
 }
+
 
 // Acabamento de documentário ilustrado: vinheta, grão de papel, faixa de legenda em português.
 function Grade({t}: {t: number}) {

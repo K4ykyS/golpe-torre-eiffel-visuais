@@ -1,16 +1,16 @@
 name: Renderizar visuais (sem áudio)
 on:
   workflow_dispatch:
-    inputs:
-      composicao:
-        description: 'Id da composição (Piloto ou Video)'
-        default: 'Piloto'
 permissions:
   contents: read
 jobs:
   render:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        parte: [0, 1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,9 +20,13 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y libnss3 libdbus-1-3 libatk1.0-0 libasound2t64 libxrandr2 libxkbcommon-dev libxfixes3 libxcomposite1 libxdamage1 libgbm-dev libatk-bridge2.0-0 libcups2 libpango-1.0-0 libcairo2
       - run: npm ci
       - run: npx remotion browser ensure
-      - run: npx remotion render src/index.ts "${{ inputs.composicao }}" out/visual.mp4 --codec h264 --crf 16 --gl=angle
+      - name: Renderizar 300 quadros desta parte
+        run: |
+          START=$(( ${{ matrix.parte }} * 300 ))
+          END=$(( START + 299 ))
+          npx remotion render src/index.ts Video out/parte.mp4 --frames=$START-$END --codec h264 --crf 16 --gl=angle
       - uses: actions/upload-artifact@v4
         with:
-          name: visuais-${{ inputs.composicao }}
-          path: out/visual.mp4
+          name: visuais-parte-${{ matrix.parte }}
+          path: out/parte.mp4
           retention-days: 1

@@ -45,9 +45,9 @@ export type Cam = {p: [number, number, number]; l: [number, number, number]; fov
 export type Shot = {id: string; a: number; b: number; cam: (t: number) => Cam};
 
 const mix = (a: number[], b: number[], u: number) => a.map((v, i) => lerp(v, b[i], u));
-const glide = (u: number) => lerp(u, sm(u), 0.65);
+export const glide = (u: number) => lerp(u, sm(u), 0.65);
 
-function lin(a: number, b: number, from: Cam, to: Cam): (t: number) => Cam {
+export function lin(a: number, b: number, from: Cam, to: Cam): (t: number) => Cam {
   return (t) => {
     const u = glide((t - a) / (b - a));
     return {p: mix(from.p, to.p, u) as any, l: mix(from.l, to.l, u) as any, fov: lerp(from.fov, to.fov, u), roll: lerp(from.roll, to.roll, u)};

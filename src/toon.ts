@@ -4,7 +4,7 @@ export const INK = '#241726';
 export const DW = 1000; // tela do cartão: 200 px de margem de cada lado (braços esticados não são cortados)
 export const DH = 1200; // 100 px de margem em cima e embaixo
 
-export type Expr = 'confiante' | 'neutro' | 'astuto' | 'surpreso' | 'encantado' | 'preocupado' | 'lendo' | 'sorriso';
+export type Expr = 'bravo' | 'confiante' | 'neutro' | 'astuto' | 'surpreso' | 'encantado' | 'preocupado' | 'lendo' | 'sorriso';
 
 export type Look = {
   skin: string;
@@ -17,14 +17,14 @@ export type Look = {
   trousers: string;
   build: number; // 1 = normal; >1 mais largo
   mustache: 'fina' | 'farta' | 'nenhuma';
-  hat?: 'bowler' | 'cartola' | null;
+  hat?: 'bowler' | 'cartola' | 'fedora' | null;
   glasses?: boolean;
   hairStyle: 'liso' | 'calvo' | 'grisalho';
   pocketSquare?: string;
   chain?: boolean;
 };
 
-export type Prop = null | 'papel' | 'maleta';
+export type Prop = null | 'papel' | 'maleta' | 'jornal';
 
 export type State = {
   expr: Expr;
@@ -40,6 +40,7 @@ export type State = {
   prop?: Prop;
   propHand?: 'L' | 'R';
   headTilt?: number; // graus
+  walk?: number; // fase do passo (rad)
 };
 
 const rad = (d: number) => (d * Math.PI) / 180;
@@ -167,6 +168,7 @@ function drawHead(ctx: CanvasRenderingContext2D, L: Look, S: State, cx: number, 
   if (e === 'surpreso') { browLift = -16; browTilt = 0; }
   if (e === 'astuto') { browLift = -2; browTilt = -0.28; }
   if (e === 'confiante') { browLift = -7; browTilt = -0.1; }
+  if (e === 'bravo') { browLift = 4; browTilt = -0.55; }
   if (e === 'preocupado') { browLift = -9; browTilt = 0.38; }
   if (e === 'encantado') { browLift = -9; browTilt = 0.1; }
   if (e === 'lendo') { browLift = 0; browTilt = 0.1; }
@@ -300,6 +302,11 @@ function drawHead(ctx: CanvasRenderingContext2D, L: Look, S: State, cx: number, 
     ctx.moveTo(mxc - 24, mouthY + 4);
     ctx.quadraticCurveTo(mxc + 6, mouthY + 10, mxc + 30, mouthY - 8);
     ctx.stroke();
+  } else if (e === 'bravo') {
+    ctx.beginPath();
+    ctx.moveTo(mxc - 26, mouthY + 14);
+    ctx.quadraticCurveTo(mxc, mouthY - 10, mxc + 26, mouthY + 14);
+    ctx.stroke();
   } else if (e === 'preocupado') {
     ctx.beginPath();
     ctx.moveTo(mxc - 22, mouthY + 12);
@@ -347,10 +354,54 @@ function drawHead(ctx: CanvasRenderingContext2D, L: Look, S: State, cx: number, 
     ctx.fillStyle = '#7a1f2a';
     ctx.fillRect(cx - hw * 0.93, cy - hh * 0.82, hw * 1.86, 9);
   }
+  if (L.hat === 'cartola') {
+    ctx.fillStyle = '#1d1a22';
+    ink(ctx, 7);
+    ctx.beginPath();
+    ctx.ellipse(cx, cy - hh * 0.6, hw * 1.3, 14, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.rect(cx - hw * 0.8, cy - hh * 1.9, hw * 1.6, hh * 1.3);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#6b6275';
+    ctx.fillRect(cx - hw * 0.78, cy - hh * 0.95, hw * 1.56, 10);
+  }
+  if (L.hat === 'fedora') {
+    ctx.fillStyle = '#5a5047';
+    ink(ctx, 7);
+    ctx.beginPath();
+    ctx.ellipse(cx, cy - hh * 0.6, hw * 1.45, 14, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx - hw * 0.95, cy - hh * 0.64);
+    ctx.quadraticCurveTo(cx - hw * 0.9, cy - hh * 1.4, cx, cy - hh * 1.32);
+    ctx.quadraticCurveTo(cx + hw * 0.9, cy - hh * 1.4, cx + hw * 0.95, cy - hh * 0.64);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#2b2622';
+    ctx.fillRect(cx - hw * 0.93, cy - hh * 0.82, hw * 1.86, 10);
+  }
   ctx.restore();
 }
 
 function drawProp(ctx: CanvasRenderingContext2D, S: State, hx: number, hy: number, side: 'L' | 'R') {
+  if (S.prop === 'jornal') {
+    ctx.save();
+    ctx.translate(hx, hy - 8);
+    ctx.rotate(rad(side === 'L' ? -6 : 6));
+    ctx.fillStyle = '#d9d4c4';
+    ink(ctx, 5);
+    ctx.fillRect(-90, -230, 180, 250);
+    ctx.strokeRect(-90, -230, 180, 250);
+    ctx.fillStyle = '#2a2528';
+    ctx.fillRect(-72, -214, 144, 26);
+    for (let i = 0; i < 9; i++) ctx.fillRect(-72, -170 + i * 20, i % 3 === 0 ? 144 : 66, 6);
+    ctx.restore();
+  }
   if (S.prop === 'papel') {
     ctx.save();
     ctx.translate(hx, hy - 8);
@@ -390,18 +441,21 @@ export function drawCharacter(ctx: CanvasRenderingContext2D, L: Look, S: State, 
   ink(ctx, 8);
   for (const sgn of [-1, 1]) {
     const x0 = cx + sgn * 44 * B;
+    const wph = S.walk ?? 0;
+    const sw = S.walk === undefined ? 0 : Math.sin(wph) * sgn * 30;
+    const lift = S.walk === undefined ? 0 : Math.max(0, Math.sin(wph + (sgn > 0 ? 0 : Math.PI))) * 18;
     ctx.beginPath();
     ctx.moveTo(x0 - 40 * B, 500 + S.bob * 0.4);
     ctx.lineTo(x0 + 40 * B, 500 + S.bob * 0.4);
-    ctx.lineTo(x0 + 34 * B, 940);
-    ctx.lineTo(x0 - 34 * B, 940);
+    ctx.lineTo(x0 + 34 * B + sw, 940 - lift);
+    ctx.lineTo(x0 - 34 * B + sw, 940 - lift);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
     // sapato
     ctx.fillStyle = '#1b1514';
     ctx.beginPath();
-    ctx.ellipse(x0 + sgn * 16, 958, 56, 20, 0, 0, Math.PI * 2);
+    ctx.ellipse(x0 + sgn * 16 + sw, 958 - lift, 56, 20, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = L.trousers;
@@ -588,6 +642,12 @@ export const EMPRESARIO_A: Look = {
   hairStyle: 'liso',
   glasses: true,
 };
+export const POISSON_CHAPEU: Look = {...POISSON, hat: 'bowler'};
+export const LUSTIG_CHAPEU: Look = {...LUSTIG, hat: 'fedora', suit: '#5a5f78'};
+export const OFICIAL_A: Look = {skin: '#eebd98', hair: '#a29a8e', suit: '#25252f', suitDark: '#17171f', shirt: '#f4efe0', tie: '#7b2432', trousers: '#2a2a33', build: 1.05, mustache: 'farta', hairStyle: 'grisalho', hat: 'cartola'};
+export const OFICIAL_B: Look = {skin: '#e2ad88', hair: '#403838', suit: '#44484f', suitDark: '#2f3238', shirt: '#f4efe0', tie: '#2f4a6b', trousers: '#33363c', build: 0.98, mustache: 'fina', hairStyle: 'liso', hat: 'cartola', glasses: true};
+export const EMPRESARIO_C: Look = {skin: '#d9a37f', hair: '#2a2024', suit: '#2f4f4a', suitDark: '#213a36', shirt: '#efe8d6', tie: '#c08a2e', trousers: '#2a3f3b', build: 1.2, mustache: 'farta', hairStyle: 'liso'};
+export const EMPRESARIO_D: Look = {skin: '#efc4a0', hair: '#cfc7b8', suit: '#5a4a3a', suitDark: '#40342a', shirt: '#f1ead8', tie: '#7a1f2a', trousers: '#40342a', build: 0.96, mustache: 'nenhuma', hairStyle: 'grisalho', glasses: true};
 export const EMPRESARIO_B: Look = {
   skin: '#f1c7a6',
   hair: '#e8e2d4',
