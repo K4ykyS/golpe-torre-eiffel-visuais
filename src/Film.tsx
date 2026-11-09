@@ -168,7 +168,7 @@ function StampOn({base, T, tHit, map, sleeve = '#4a4f66', size = [0.36, 0.18], m
         <Cyl r={0.07} h={0.05} position={[0, 0.025, 0]} color="#3b2a1a" />
         <Cyl r={0.03} h={0.16} position={[0, 0.13, 0]} color="#5a3a22" />
         <Box size={[0.1, 0.06, 0.1]} position={[0, 0.22, 0]} color="#5a3a22" />
-        <Limb3D a={[-0.03, 1.2, 0.03]} b={[0, 0.27, 0]} color={sleeve} r={0.05} />
+        <Limb3D a={[-0.03, 1.2, 0.03]} b={[0, 0.27, 0]} color={sleeve} r={0.035} />
       </group>
     </group>
   );
@@ -223,10 +223,10 @@ const SHOTS: Shot[] = [
   // ===== 0 – 9 s : Paris, 1925 — o comerciante e a "compra"
   {
     id: 'praca-aberta', a: 0, b: 2.1,
-    cam: lin(0, 2.1, {p: [-2.6, 2.2, 14], l: [-2.2, 6, -20], fov: 54, roll: 1.2}, {p: [-1.8, 2.0, 12], l: [-1.6, 5.2, -20], fov: 50, roll: -0.5}),
+    cam: lin(0, 2.1, {p: [-2.6, 1.8, 14.0], l: [-2.3, 3.4, -20], fov: 54, roll: 1.2}, {p: [-2.0, 1.7, 12.5], l: [-1.9, 3.2, -20], fov: 50, roll: -0.5}),
     render: ({T, tx2, cam}) =>
       paris(
-        <Actor look={POISSON_CHAPEU} pos={[lerp(-6, -1.4, ramp(T, 0.2, 2.1)), 0, 6.5]} cam={cam.p}
+        <Actor look={POISSON_CHAPEU} pos={[lerp(-3.5, -1.6, ramp(T, 0.0, 2.1)), 0, 8.5]} cam={cam.p}
           state={S({expr: 'encantado', look: [0.5, -0.4], turn: 0.3, aR: [30, -10], aL: [-14, 10], lean: 3, bob: Math.abs(Math.sin(T * 7)) * 8, walk: T * 7, blink: bl(T, 0.3)})} />,
         tx2),
   },
@@ -282,14 +282,14 @@ const SHOTS: Shot[] = [
   },
   {
     id: 'autoridades', a: 13.0, b: 15.9,
-    cam: lin(13.0, 15.9, {p: [-1.2, 1.2, -10.5], l: [2.0, 5, -33], fov: 56, roll: -3}, {p: [-0.6, 1.4, -12.5], l: [2.2, 6, -33], fov: 52, roll: 1}),
+    cam: lin(13.0, 15.9, {p: [-0.3, 1.5, -10.5], l: [-0.6, 3.2, -33], fov: 42, roll: -3}, {p: [0.1, 1.6, -12.0], l: [-0.3, 3.6, -33], fov: 40, roll: 1}),
     render: ({T, tx2, cam}) =>
       paris(
         <>
-          <Actor look={OFICIAL_A} pos={[-1.6, 0, -16]} cam={cam.p}
+          <Actor look={OFICIAL_A} pos={[-0.75, 0, -16]} cam={cam.p}
             state={S({expr: pick(T, [[0, 'preocupado'], [14.2, 'surpreso'], [15, 'preocupado']] as any), look: [0.7, -0.8], turn: 0.3, blink: bl(T, 0.1), sweat: ramp(T, 13.4, 14.2), bob: breathe(T),
               aR: keyv(T, [[13, [20, 10]], [13.6, [118, 150]], [15, [118, 150]]]) as any})} />
-          <Actor look={OFICIAL_B} pos={[0.3, 0, -15.5]} cam={cam.p}
+          <Actor look={OFICIAL_B} pos={[0.45, 0, -15.5]} cam={cam.p}
             state={S({expr: 'preocupado', look: [-0.5, -0.4], turn: -0.3, blink: bl(T, 0.9), sweat: ramp(T, 14.3, 15), bob: breathe(T, 1),
               aL: keyv(T, [[13, [-8, -4]], [14, [-8, -4]], [14.5, [-60, -150]]]) as any, aR: [12, 20]})} />
         </>,
@@ -316,11 +316,11 @@ const SHOTS: Shot[] = [
   },
   {
     id: 'correio', a: 21.5, b: 24.0,
-    cam: lin(21.5, 24.0, {p: [-1.4, 1.4, 8.6], l: [-2.6, 1.3, 4.2], fov: 38, roll: -2}, {p: [-0.6, 1.5, 8.0], l: [-2.6, 1.6, 4.2], fov: 42, roll: 2}),
+    cam: lin(21.5, 24.0, {p: [-1.2, 1.5, 9.0], l: [-2.5, 1.35, 3.8], fov: 36, roll: -2}, {p: [-0.8, 1.5, 8.2], l: [-2.5, 1.45, 3.8], fov: 38, roll: 2}),
     render: ({T, tx, tx2, cam}) =>
       paris(
         <>
-          <Actor look={LUSTIG_CHAPEU} pos={[-1.8, 0, 4.7]} cam={cam.p}
+          <Actor look={LUSTIG_CHAPEU} pos={[-1.9, 0, 3.7]} cam={cam.p}
             state={S({expr: 'confiante', look: [-0.8, 0.2], turn: -0.5, blink: bl(T, 0.2), bob: breathe(T),
               aR: keyv(T, [[21.5, [60, 90]], [22.0, [-60, -100]], [22.4, [-40, -70]], [23.2, [10, 5]]]) as any, aL: [-10, -6]})} />
           {[0, 1, 2].map((i) => {
@@ -328,7 +328,7 @@ const SHOTS: Shot[] = [
             const u = clamp01((T - t0) / 1.2);
             if (T < t0) return null;
             return (
-              <group key={i} position={[-3 + u * 5 + i * 0.3, 1.5 + Math.sin(u * Math.PI) * 1.2 + u * 1.5, 4.5 - u * 3]} rotation={[0.3 * u, u * 5, u * 7]}>
+              <group key={i} position={[-2.4 + u * 4 + i * 0.3, 1.4 + Math.sin(u * Math.PI) * 1.2 + u * 1.5, 3.6 - u * 3]} rotation={[0.3 * u, u * 5, u * 7]}>
                 <MiniLetter tx={tx} />
               </group>
             );
@@ -338,14 +338,14 @@ const SHOTS: Shot[] = [
   },
   {
     id: 'ferro-velho', a: 24.0, b: 25.6,
-    cam: lin(24.0, 25.6, {p: [0, 1.5, 6.4], l: [0, 1.6, -8], fov: 50, roll: 1.5}, {p: [0.3, 1.5, 5.4], l: [0, 1.7, -8], fov: 46, roll: -1}),
+    cam: lin(24.0, 25.6, {p: [0, 1.4, 6.2], l: [0, 1.5, -8], fov: 46, roll: 1.5}, {p: [0.1, 1.4, 5.4], l: [0, 1.55, -8], fov: 42, roll: -1}),
     render: ({T, tx2, cam}) => (
       <>
         <Lights set="scrap" />
         <ScrapSet tx={tx2} />
-        <Actor look={EMPRESARIO_C} pos={[-0.7, 0, 1]} cam={cam.p}
+        <Actor look={EMPRESARIO_C} pos={[-0.55, 0, 1]} cam={cam.p}
           state={S({expr: pick(T, [[0, 'lendo'], [24.9, 'surpreso']] as any), look: [0, 0.8], blink: bl(T, 0.7), bob: breathe(T), aR: [10, -140], prop: 'papel', propHand: 'R'})} />
-        <Actor look={EMPRESARIO_D} pos={[0.8, 0, 1.4]} cam={cam.p}
+        <Actor look={EMPRESARIO_D} pos={[0.6, 0, 1.4]} cam={cam.p}
           state={S({expr: pick(T, [[0, 'lendo'], [25.1, 'encantado']] as any), look: [0, 0.8], blink: bl(T, 1.9), bob: breathe(T, 2), aR: [10, -140], prop: 'papel', propHand: 'R'})} />
       </>
     ),
@@ -370,7 +370,7 @@ const SHOTS: Shot[] = [
   },
   {
     id: 'hotel-grua', a: 28.4, b: PILOT_A,
-    cam: lin(28.4, PILOT_A, {p: [0.4, 3.4, 8.4], l: [0.5, 2.1, -1], fov: 58, roll: 2.5}, {p: [0.4, 1.4, 6.6], l: [0.42, 1.1, -1], fov: 56, roll: 1.2}),
+    cam: lin(28.4, PILOT_A, {p: [0.6, 3.6, 9.0], l: [-0.1, 2.3, -1], fov: 54, roll: 2.5}, {p: [0.5, 1.5, 6.9], l: [-0.3, 1.75, -1], fov: 52, roll: 1}),
     render: ({cam, tx}) => <HotelPilot t={0} tx={tx} cam={cam} />,
   },
   {
@@ -401,7 +401,7 @@ const SHOTS: Shot[] = [
   },
   {
     id: 'trem', a: 43.2, b: 44.6,
-    cam: lin(43.2, 44.6, {p: [0.5, 1.5, 1.5], l: [0, 1.1, -1.3], fov: 46, roll: 2}, {p: [0.3, 1.45, 1.1], l: [0, 1.15, -1.3], fov: 42, roll: -1}),
+    cam: lin(43.2, 44.6, {p: [0.5, 1.35, 1.5], l: [0, 1.2, -1.3], fov: 42, roll: 2}, {p: [0.3, 1.35, 1.1], l: [0, 1.22, -1.3], fov: 38, roll: -1}),
     render: ({T, tx2, cam}) => (
       <>
         <Lights set="train" />
@@ -414,7 +414,7 @@ const SHOTS: Shot[] = [
   },
   {
     id: 'trem-janela', a: 44.6, b: 46.3,
-    cam: lin(44.6, 46.3, {p: [0.9, 1.4, 0.7], l: [0.1, 1.35, -1.5], fov: 44, roll: -2}, {p: [0.4, 1.4, 0.5], l: [0.0, 1.35, -1.5], fov: 38, roll: 1}),
+    cam: lin(44.6, 46.3, {p: [0.6, 1.3, 0.6], l: [0.0, 1.25, -1.5], fov: 42, roll: -2}, {p: [0.3, 1.3, 0.4], l: [0.0, 1.25, -1.5], fov: 38, roll: 1}),
     render: ({T, tx2, cam}) => (
       <>
         <Lights set="train" />
@@ -436,7 +436,7 @@ const SHOTS: Shot[] = [
   },
   {
     id: 'poisson-vergonha', a: 48.3, b: 50.6,
-    cam: lin(48.3, 50.6, {p: [-8.0, 1.6, -1.5], l: [-8.8, 1.6, -3.6], fov: 28, roll: 3}, {p: [-8.4, 1.6, -2.2], l: [-8.8, 1.6, -3.6], fov: 23, roll: 0}),
+    cam: lin(48.3, 50.6, {p: [-8.8, 1.55, -1.4], l: [-8.8, 1.5, -3.6], fov: 30, roll: 3}, {p: [-8.8, 1.55, -2.0], l: [-8.8, 1.5, -3.6], fov: 25, roll: 0}),
     render: ({T, tx2, cam}) =>
       paris(
         <Actor look={POISSON_CHAPEU} pos={[-8.8, 0, -3.6]} cam={cam.p}
@@ -457,7 +457,7 @@ const SHOTS: Shot[] = [
   },
   {
     id: 'lustig-volta', a: 53.0, b: 54.6,
-    cam: lin(53.0, 54.6, {p: [5.5, 1.5, 4.2], l: [9.0, 1.7, -5.5], fov: 44, roll: 2}, {p: [3.0, 1.5, 6.0], l: [6.0, 1.7, -1], fov: 40, roll: -1}),
+    cam: lin(53.0, 54.6, {p: [6.8, 1.5, 1.2], l: [8.4, 1.5, -4.5], fov: 38, roll: 2}, {p: [4.4, 1.5, 4.6], l: [5.8, 1.5, 0.5], fov: 36, roll: -1}),
     render: ({T, tx2, cam}) => {
       const u = ramp(T, 53.0, 54.6);
       return paris(
@@ -468,16 +468,16 @@ const SHOTS: Shot[] = [
   },
   {
     id: 'paris-de-novo', a: 54.6, b: 56.2,
-    cam: lin(54.6, 56.2, {p: [0, 2.4, 14], l: [1.5, 6, -40], fov: 54, roll: -1.5}, {p: [0.8, 2.2, 12.5], l: [1.5, 7, -40], fov: 52, roll: 1}),
+    cam: lin(54.6, 56.2, {p: [1.8, 2.2, 14], l: [1.2, 5, -40], fov: 54, roll: -1.5}, {p: [1.8, 2.0, 12.5], l: [1.2, 5.5, -40], fov: 50, roll: 1}),
     render: ({T, tx2, cam}) =>
       paris(
-        <Actor look={LUSTIG_CHAPEU} pos={[lerp(5.2, 1.0, ramp(T, 54.6, 56.2)), 0, 5.5]} cam={cam.p}
+        <Actor look={LUSTIG_CHAPEU} pos={[lerp(3.0, 0.5, ramp(T, 54.6, 56.2)), 0, 6.0]} cam={cam.p}
           state={S({expr: 'confiante', turn: -0.5, blink: bl(T, 0.4), bob: Math.abs(Math.sin(T * 7)) * 9, walk: T * 7, lean: 4, aL: [-10, -4], aR: [20, 10], look: [-0.5, -0.3]})} />,
         tx2),
   },
   {
     id: 'novo-golpe', a: 56.2, b: 58.2,
-    cam: lin(56.2, 58.2, {p: [-0.2, 1.5, 6.4], l: [0.4, 1.25, -1], fov: 52, roll: -1.5}, {p: [0.3, 1.45, 5.0], l: [0.6, 1.3, -1], fov: 46, roll: 1}),
+    cam: lin(56.2, 58.2, {p: [0.5, 1.5, 6.9], l: [-0.3, 1.75, -1], fov: 52, roll: -1.5}, {p: [0.4, 1.45, 6.0], l: [-0.2, 1.65, -1], fov: 50, roll: 1}),
     render: ({T, tx, cam}) =>
       hotel(cam, (
         <>
@@ -502,7 +502,7 @@ const SHOTS: Shot[] = [
   },
   {
     id: 'furia', a: 60.06, b: 61.4,
-    cam: lin(60.06, 61.4, {p: [1.9, 1.4, 3.6], l: [0.7, 1.2, -1], fov: 44, roll: 3}, {p: [1.5, 1.4, 3.1], l: [0.4, 1.2, -1], fov: 40, roll: -1}),
+    cam: lin(60.06, 61.4, {p: [-0.1, 1.3, 5.4], l: [0.0, 1.15, -0.5], fov: 46, roll: 3}, {p: [-0.1, 1.3, 4.8], l: [0.0, 1.15, -0.5], fov: 44, roll: -1}),
     render: ({T, tx, tx2, cam}) => {
       const rise = ramp(T, 60.1, 60.45);
       const slam = key(T, [[60.3, 0], [60.5, 18], [60.7, 0]]);
@@ -521,7 +521,7 @@ const SHOTS: Shot[] = [
   },
   {
     id: 'torre-final', a: 61.4, b: FILM_LEN,
-    cam: lin(61.4, FILM_LEN, {p: [0.2, 1.7, -17.2], l: [1.0, 6, -42], fov: 56, roll: 1.5}, {p: [0.6, 1.8, -18.6], l: [1.0, 12, -42], fov: 54, roll: -1}),
+    cam: lin(61.4, FILM_LEN, {p: [0.3, 1.7, -14], l: [0.5, 12, -42], fov: 60, roll: 1.5}, {p: [0.6, 2.0, -18], l: [0.6, 14, -42], fov: 56, roll: -1}),
     render: ({tx2}) => paris(null, tx2),
   },
 ];
