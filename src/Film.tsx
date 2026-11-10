@@ -41,14 +41,14 @@ const glowTex = (() => {
     return t;
   };
 })();
-function Glow({pos, size, color, amt}: {pos: V3; size: number; color: string; amt: number}) {
+export function Glow({pos, size, color, amt}: {pos: V3; size: number; color: string; amt: number}) {
   return (
     <sprite position={pos} scale={[size, size, 1]}>
       <spriteMaterial map={glowTex()} color={color} opacity={amt} blending={THREE.AdditiveBlending} depthWrite={false} transparent fog={false} />
     </sprite>
   );
 }
-function Dust({T, cam}: {T: number; cam: Cam}) {
+export function Dust({T, cam}: {T: number; cam: Cam}) {
   const N = 70;
   const geo = useMemo(() => new THREE.BufferGeometry(), []);
   const pos = useMemo(() => new Float32Array(N * 3), []);

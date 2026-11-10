@@ -17,14 +17,16 @@ export type Look = {
   trousers: string;
   build: number; // 1 = normal; >1 mais largo
   mustache: 'fina' | 'farta' | 'nenhuma';
-  hat?: 'bowler' | 'cartola' | 'fedora' | null;
+  hat?: 'bowler' | 'cartola' | 'fedora' | 'bucket' | null;
+  casual?: 'camiseta' | 'colete'; // roupa do dia a dia (sem terno/gravata)
+  strap?: boolean; // alça de câmera atravessada no peito
   glasses?: boolean;
   hairStyle: 'liso' | 'calvo' | 'grisalho';
   pocketSquare?: string;
   chain?: boolean;
 };
 
-export type Prop = null | 'papel' | 'maleta' | 'jornal';
+export type Prop = null | 'papel' | 'maleta' | 'jornal' | 'camera';
 
 export type State = {
   expr: Expr;
@@ -41,6 +43,8 @@ export type State = {
   propHand?: 'L' | 'R';
   headTilt?: number; // graus
   walk?: number; // fase do passo (rad)
+  talk?: number; // 0..1 abertura da boca ao falar
+  seated?: boolean; // sentado: não desenha as pernas
 };
 
 const rad = (d: number) => (d * Math.PI) / 180;

@@ -40,6 +40,36 @@ function limb(ctx: CanvasRenderingContext2D, sx: number, sy: number, a1: number,
 }
 
 function drawProp(ctx: CanvasRenderingContext2D, S: State, hx: number, hy: number) {
+  if (S.prop === 'camera') {
+    // câmera DSLR: corpo preto, lente apontando para a direita do cartão
+    ctx.save();
+    ctx.translate(hx, hy);
+    ctx.fillStyle = '#26242e';
+    line(ctx, 9);
+    ctx.beginPath();
+    ctx.roundRect(-62, -44, 124, 80, 12);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#3a3744';
+    ctx.beginPath();
+    ctx.roundRect(-34, -62, 52, 22, 6); // topo (pentaprisma)
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#1a1820';
+    ctx.beginPath();
+    ctx.roundRect(54, -34, 62, 60, 8); // lente
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#6fa8d8';
+    ctx.beginPath();
+    ctx.ellipse(116, -4, 9, 24, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#c9c9d4';
+    ctx.fillRect(-52, -34, 22, 12);
+    ctx.restore();
+    return;
+  }
   if (S.prop !== 'papel' && S.prop !== 'jornal') return;
   const j = S.prop === 'jornal';
   ctx.save();
@@ -237,7 +267,14 @@ function drawHead(ctx: CanvasRenderingContext2D, L: Look, S: State, cx: number, 
   // boca
   const mo = my + 36;
   line(ctx, 9);
-  if (e === 'surpreso') {
+  const talk = S.talk ?? 0;
+  if (talk > 0.06) {
+    ctx.fillStyle = '#4a1020';
+    ctx.beginPath();
+    ctx.ellipse(mx, mo + 6, 14 + talk * 14, 4 + talk * 24, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  } else if (e === 'surpreso') {
     ctx.fillStyle = '#4a1020';
     ctx.beginPath();
     ctx.ellipse(mx, mo + 6, 16, 22, 0, 0, Math.PI * 2);
@@ -296,9 +333,25 @@ function drawHead(ctx: CanvasRenderingContext2D, L: Look, S: State, cx: number, 
   // chapéus
   if (L.hat) {
     const base = cy - 60;
-    ctx.fillStyle = L.hat === 'cartola' ? '#1d1a22' : L.hat === 'fedora' ? '#4a4038' : '#26211f';
+    ctx.fillStyle = L.hat === 'cartola' ? '#1d1a22' : L.hat === 'fedora' ? '#4a4038' : L.hat === 'bucket' ? '#b8a46a' : '#26211f';
     line(ctx, 13);
-    if (L.hat === 'cartola') {
+    if (L.hat === 'bucket') {
+      // chapéu de pescador (turista): aba caída e copa baixa
+      ctx.beginPath();
+      ctx.moveTo(cx - 100, base - 70);
+      ctx.lineTo(cx + 100, base - 70);
+      ctx.lineTo(cx + 124, base + 8);
+      ctx.lineTo(cx - 124, base + 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(cx, base + 12, 168, 26, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#7a6a3a';
+      ctx.fillRect(cx - 118, base - 22, 236, 18);
+    } else if (L.hat === 'cartola') {
       ctx.beginPath();
       ctx.ellipse(cx, base + 12, 150, 22, 0, 0, Math.PI * 2);
       ctx.fill();
@@ -340,7 +393,7 @@ export function drawCharacter2(ctx: CanvasRenderingContext2D, L: Look, S: State,
   // ----- pernas (linhas)
   const walk = S.walk;
   const hipY = 668 + S.bob * 0.35;
-  for (const sgn of [-1, 1]) {
+  for (const sgn of S.seated ? [] : [-1, 1]) {
     const hx = cx + sgn * 46 * B;
     const sw = walk === undefined ? 0 : Math.sin(walk) * sgn * 62;
     const lift = walk === undefined ? 0 : Math.max(0, Math.sin(walk + (sgn > 0 ? 0 : Math.PI))) * 30;
@@ -368,6 +421,68 @@ export function drawCharacter2(ctx: CanvasRenderingContext2D, L: Look, S: State,
   ctx.fill();
   ctx.save();
   ctx.clip();
+  if (L.casual) {
+    if (L.casual === 'colete') {
+      // camisa clara com colete de bolsos (turista fotógrafo)
+      ctx.fillStyle = L.shirt;
+      ctx.beginPath();
+      ctx.moveTo(cx - 40, top + 4);
+      ctx.lineTo(cx + 40, top + 4);
+      ctx.lineTo(cx + 30, top + 300);
+      ctx.lineTo(cx - 30, top + 300);
+      ctx.closePath();
+      ctx.fill();
+      line(ctx, 7);
+      for (const s of [-1, 1]) {
+        ctx.fillStyle = L.vest ?? L.suit;
+        ctx.beginPath();
+        ctx.moveTo(cx + s * 38, top + 2);
+        ctx.lineTo(cx + s * 26, top + 300);
+        ctx.lineTo(cx + s * 120, top + 300);
+        ctx.lineTo(cx + s * 120, top + 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = L.suitDark;
+        ctx.fillRect(cx + s * 52 - (s > 0 ? 0 : 50), top + 150, 50, 46);
+        ctx.strokeRect(cx + s * 52 - (s > 0 ? 0 : 50), top + 150, 50, 46);
+        ctx.fillRect(cx + s * 52 - (s > 0 ? 0 : 50), top + 215, 50, 46);
+        ctx.strokeRect(cx + s * 52 - (s > 0 ? 0 : 50), top + 215, 50, 46);
+      }
+      ctx.fillStyle = L.skin;
+      ctx.beginPath();
+      ctx.moveTo(cx - 30, top + 4);
+      ctx.lineTo(cx, top + 56);
+      ctx.lineTo(cx + 30, top + 4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    } else {
+      // camiseta: gola redonda, dobras
+      ctx.fillStyle = L.skin;
+      ctx.beginPath();
+      ctx.ellipse(cx, top + 2, 46, 36, 0, 0, Math.PI);
+      ctx.fill();
+      line(ctx, 8);
+      ctx.beginPath();
+      ctx.ellipse(cx, top + 2, 46, 36, 0, 0, Math.PI);
+      ctx.stroke();
+      line(ctx, 5, 'rgba(20,10,40,0.30)');
+      ctx.beginPath();
+      ctx.moveTo(cx - 60, top + 170);
+      ctx.quadraticCurveTo(cx - 20, top + 190, cx + 30, top + 176);
+      ctx.moveTo(cx + 40, top + 90);
+      ctx.quadraticCurveTo(cx + 62, top + 120, cx + 54, top + 150);
+      ctx.stroke();
+    }
+    if (L.strap) {
+      line(ctx, 15, '#2a2630');
+      ctx.beginPath();
+      ctx.moveTo(cx - 62, top - 4);
+      ctx.lineTo(cx + 96, top + 300);
+      ctx.stroke();
+    }
+  } else {
   // colete / camisa / gravata / lapelas
   ctx.fillStyle = L.vest ?? L.shirt;
   ctx.beginPath();
@@ -427,6 +542,7 @@ export function drawCharacter2(ctx: CanvasRenderingContext2D, L: Look, S: State,
     ctx.moveTo(cx - 36, top + 244);
     ctx.quadraticCurveTo(cx, top + 292, cx + 56, top + 250);
     ctx.stroke();
+  }
   }
   ctx.restore();
   line(ctx, 15);
