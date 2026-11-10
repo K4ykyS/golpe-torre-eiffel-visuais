@@ -12,6 +12,7 @@ import {Rig} from './Pilot';
 import {Dust, Glow} from './Film';
 import {Cam, FPS, blink, glide, key, keyv, lerp, pick, ramp, sm} from './story';
 import {Tex3, makeTextures3} from './paint3';
+import {SHOTS2, Cena2, Grade2, isNight} from './Airbnb2';
 import PALAVRAS from '../voz/palavras-airbnb.json';
 
 export const AIRBNB_LEN = 83.1478;
@@ -34,7 +35,7 @@ export const KLAUS: Look = {
   trousers: '#7a6a45', build: 1.08, mustache: 'nenhuma', hairStyle: 'liso', casual: 'colete', strap: true, hat: 'bucket',
 };
 
-const S = (o: Partial<State> = {}): State => ({expr: 'neutro', look: [0, 0], turn: 0, blink: 0, aL: [-8, -4], aR: [8, 4], lean: 0, bob: 0, ...o});
+export const S = (o: Partial<State> = {}): State => ({expr: 'neutro', look: [0, 0], turn: 0, blink: 0, aL: [-8, -4], aR: [8, 4], lean: 0, bob: 0, ...o});
 
 // boca falando: abre e fecha dentro de cada palavra da narração
 const WORDS = PALAVRAS as {w: string; s: number; e: number}[];
@@ -58,10 +59,10 @@ function useCanvas() {
 }
 const yawTo = (cam: V3, p: V3) => Math.atan2(cam[0] - p[0], cam[2] - p[2]);
 
-function Person({look, state, hip, cam, roll = 0, flip = false}: {look: Look; state: State; hip: V3; cam: V3; roll?: number; flip?: boolean}) {
+export function Person({look, state, hip, cam, roll = 0, flip = false, light = LIGHT_QUARTO}: {look: Look; state: State; hip: V3; cam: V3; roll?: number; flip?: boolean; light?: Light}) {
   const canvas = useCanvas();
   const ctx = canvas.getContext('2d')!;
-  drawCharacter2(ctx, look, state, SCALE, LIGHT_QUARTO);
+  drawCharacter2(ctx, look, state, SCALE, light);
   return (
     <group position={hip} rotation={[0, 0, roll]}>
       <Billboard canvas={canvas} position={[0, HIP_UP, 0]} height={CARD_H * 1.2} yaw={yawTo(cam, hip)} flip={flip} tint="#ffffff" />
@@ -70,11 +71,11 @@ function Person({look, state, hip, cam, roll = 0, flip = false}: {look: Look; st
 }
 
 // ---------- cenário: quarto
-const BED_Z = -2.45;
+export const BED_Z = -2.45;
 export const PROT_HIP: V3 = [-1.5, 0.82, BED_Z];
 export const KLAUS_HIP: V3 = [-0.6, 0.5, -1.78];
 
-function Quarto({tx, T}: {tx: Tex3; T: number}) {
+export function Quarto({tx, T}: {tx: Tex3; T: number}) {
   return (
     <group>
       {/* piso, paredes, teto */}
@@ -157,25 +158,25 @@ function Quarto({tx, T}: {tx: Tex3; T: number}) {
   );
 }
 
-function Luz() {
+export function Luz({night = 0}: {night?: number}) {
   return (
     <>
       <color attach="background" args={['#1d1b34']} />
       <fog attach="fog" args={['#3a3050', 9, 22]} />
-      <ambientLight intensity={0.7} color="#a9b4ee" />
+      <ambientLight intensity={0.7 - night * 0.35} color="#a9b4ee" />
       <hemisphereLight args={['#ffe0a8', '#2a2a58', 0.5]} />
-      <pointLight position={[-1.3, 2.1, -1.8]} intensity={9} distance={8} color="#ffd48a" />
+      <pointLight position={[-1.3, 2.1, -1.8]} intensity={9 * (1 - night * 0.85)} distance={8} color="#ffd48a" />
       <pointLight position={[0.64, 1.1, -2.2]} intensity={7} distance={4} color="#ffc070" />
       <directionalLight position={[2, 3, 6]} intensity={0.55} color="#d8d8ff" />
-      <Glow pos={[-1.35, 1.85, -2.9]} size={3.0} color="#ffd88a" amt={0.22} />
+      <Glow pos={[-1.35, 1.85, -2.9]} size={3.0} color={night ? '#8aa0ff' : '#ffd88a'} amt={0.22 * (1 - night * 0.6)} />
       <Glow pos={[0.64, 1.0, -2.5]} size={1.3} color="#ffc880" amt={0.8} />
     </>
   );
 }
 
 // ---------- planos (piloto: 0 a 11,2 s)
-type Shot = {id: string; a: number; b: number; cam: (T: number) => Cam};
-const pushCam = (a: number, b: number, f: Cam, t: Cam) => (T: number): Cam => {
+export type Shot = {id: string; a: number; b: number; cam: (T: number) => Cam};
+export const pushCam = (a: number, b: number, f: Cam, t: Cam) => (T: number): Cam => {
   const u = glide((T - a) / (b - a));
   const m = (x: number[], y: number[]) => x.map((v, i) => lerp(v, y[i], u));
   return {p: m(f.p, t.p) as V3, l: m(f.l, t.l) as V3, fov: lerp(f.fov, t.fov, u), roll: lerp(f.roll, t.roll, u)};
@@ -190,9 +191,9 @@ export const SHOTS: Shot[] = [
   {id: 'klaus-olha', a: 5.16, b: 7.42, cam: pushCam(5.16, 7.42, {p: [-0.1, 1.3, 1.0], l: [-0.65, 1.3, -1.9], fov: 36, roll: -1}, {p: [-0.3, 1.32, 0.5], l: [-0.65, 1.32, -1.9], fov: 31, roll: 1})},
   {id: 'pergunta', a: 7.42, b: 9.3, cam: pushCam(7.42, 9.3, {p: [-0.35, 1.36, 0.2], l: [-0.65, 1.36, -1.9], fov: 24, roll: 1}, {p: [-0.5, 1.38, -0.2], l: [-0.65, 1.38, -1.9], fov: 19, roll: -1})},
   {id: 'dois-lado', a: 9.3, b: 10.4, cam: pushCam(9.3, 10.4, {p: [1.9, 1.25, 1.3], l: [-1.0, 1.25, -2.2], fov: 42, roll: -2}, {p: [1.6, 1.25, 1.0], l: [-1.0, 1.25, -2.2], fov: 39, roll: 0})},
-  {id: 'reacao', a: 10.4, b: 99, cam: pushCam(10.4, 11.3, {p: [-0.95, 1.6, 0.4], l: [-1.5, 1.52, -2.45], fov: 25, roll: 1}, {p: [-1.1, 1.58, 0.1], l: [-1.5, 1.52, -2.45], fov: 21, roll: -1})},
+  {id: 'reacao', a: 10.4, b: 12.0, cam: pushCam(10.4, 11.3, {p: [-0.95, 1.6, 0.4], l: [-1.5, 1.52, -2.45], fov: 25, roll: 1}, {p: [-1.1, 1.58, 0.1], l: [-1.5, 1.52, -2.45], fov: 21, roll: -1})},
 ];
-export const shotAt = (T: number) => SHOTS.find((s) => T >= s.a && T < s.b) ?? SHOTS[SHOTS.length - 1];
+export const shotAt = (T: number) => { const all = [...SHOTS, ...SHOTS2]; return all.find((s) => T >= s.a && T < s.b) ?? all[all.length - 1]; };
 
 // ---------- atores no tempo global T
 function Cena({T, cam, tx}: {T: number; cam: Cam; tx: Tex3}) {
@@ -276,11 +277,12 @@ export const Airbnb: React.FC = () => {
     <AbsoluteFill style={{background: '#150f1c'}}>
       <ThreeCanvas width={720} height={1280} camera={{position: cam.p, fov: cam.fov}} gl={{antialias: true, toneMapping: THREE.NoToneMapping}} style={{background: '#150f1c'}}>
         <Rig cam={cam} />
-        <Luz />
-        <Cena T={T} cam={cam} tx={tx} />
+        <Luz night={isNight(T)} />
+        {T < 15 ? <Cena T={T} cam={cam} tx={tx} /> : <Cena2 T={T} cam={cam} tx={tx} />}
         <Dust T={T} cam={cam} />
       </ThreeCanvas>
       <Grade T={T} />
+      <Grade2 T={T} />
     </AbsoluteFill>
   );
 };

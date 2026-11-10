@@ -21,12 +21,13 @@ export type Look = {
   casual?: 'camiseta' | 'colete'; // roupa do dia a dia (sem terno/gravata)
   strap?: boolean; // alça de câmera atravessada no peito
   glasses?: boolean;
-  hairStyle: 'liso' | 'calvo' | 'grisalho';
+  hairStyle: 'liso' | 'calvo' | 'grisalho' | 'coque';
+  earrings?: boolean;
   pocketSquare?: string;
   chain?: boolean;
 };
 
-export type Prop = null | 'papel' | 'maleta' | 'jornal' | 'camera';
+export type Prop = null | 'papel' | 'maleta' | 'jornal' | 'camera' | 'chave' | 'celular' | 'escova';
 
 export type State = {
   expr: Expr;

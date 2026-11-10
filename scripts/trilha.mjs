@@ -83,5 +83,27 @@ function shutter(t, amp) {
     if (s1 + k < E0.length) { E0[s1 + k] += v; E1[s1 + k] += v; } }
 }
 shutter(3.43, 1); shutter(4.18, 1);
+shutter(30.18, 0.9); shutter(59.78, 0.9); shutter(60.33, 0.9);
+const put = (i, v) => { if (i >= 0 && i < E0.length) { E0[i] += v; E1[i] += v; } };
+function thud(t, amp) { // porta fechando: baque grave + estalo da fechadura
+  const s0 = Math.floor(t * SR);
+  for (let k = 0; k < 0.4 * SR; k++) { const x = k / SR; put(s0 + k, amp * (Math.sin(2 * Math.PI * (70 - 30 * x) * x) * Math.exp(-x * 11) + (rnd() * 2 - 1) * 0.25 * Math.exp(-x * 60))); }
+  const s1 = Math.floor((t + 0.09) * SR);
+  for (let k = 0; k < 0.05 * SR; k++) { const x = k / SR; put(s1 + k, amp * 0.4 * (rnd() * 2 - 1) * Math.exp(-x * 120)); }
+}
+function keys(t, amp) { // molho de chaves: tilintar metálico
+  for (let j = 0; j < 7; j++) { const t0 = t + j * 0.06 + rnd() * 0.04, f = 2400 + rnd() * 2600, s0 = Math.floor(t0 * SR);
+    for (let k = 0; k < 0.18 * SR; k++) { const x = k / SR; put(s0 + k, amp * 0.35 * (Math.sin(2 * Math.PI * f * x) + 0.5 * Math.sin(2 * Math.PI * f * 2.76 * x)) * Math.exp(-x * 28)); } }
+}
+function ding(t, amp) { // notificação do celular
+  for (const [dt, f] of [[0, 1318.5], [0.11, 1975.5]]) { const s0 = Math.floor((t + dt) * SR);
+    for (let k = 0; k < 0.6 * SR; k++) { const x = k / SR; put(s0 + k, amp * 0.4 * Math.sin(2 * Math.PI * f * x) * Math.exp(-x * 6) * Math.min(1, x * 500)); } }
+}
+function papel(t, amp) { // papel sendo mostrado
+  const s0 = Math.floor(t * SR); let lp = 0;
+  for (let k = 0; k < 0.35 * SR; k++) { const x = k / SR; const n = rnd() * 2 - 1; const hp = n - lp; lp += 0.5 * (n - lp);
+    put(s0 + k, amp * 0.5 * hp * (0.5 + 0.5 * Math.sin(x * 90)) * Math.sin(Math.PI * x / 0.35)); }
+}
+thud(46.05, 0.9); keys(47.6, 0.8); thud(68.62, 0.7); ding(71.55, 0.7); papel(76.15, 0.8);
 writeWav(process.argv[4] || 'efeitos.wav', [E0, E1]);
 console.log('ok', DUR);

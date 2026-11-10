@@ -70,6 +70,70 @@ function drawProp(ctx: CanvasRenderingContext2D, S: State, hx: number, hy: numbe
     ctx.restore();
     return;
   }
+  if (S.prop === 'chave') {
+    ctx.save();
+    ctx.translate(hx, hy);
+    line(ctx, 8);
+    ctx.fillStyle = '#e2c45a';
+    ctx.beginPath();
+    ctx.arc(0, -30, 24, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#16132b';
+    ctx.beginPath();
+    ctx.arc(0, -30, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#e2c45a';
+    ctx.beginPath();
+    ctx.rect(-8, -8, 16, 80);
+    ctx.rect(8, 40, 18, 10);
+    ctx.rect(8, 58, 14, 10);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+    return;
+  }
+  if (S.prop === 'celular') {
+    ctx.save();
+    ctx.translate(hx, hy);
+    line(ctx, 9);
+    ctx.fillStyle = '#1e1c26';
+    ctx.beginPath();
+    ctx.roundRect(-52, -150, 104, 190, 16);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#e9eef8';
+    ctx.fillRect(-40, -134, 80, 158);
+    ctx.fillStyle = '#f2b81e';
+    for (let i = 0; i < 5; i++) {
+      const x0 = -32 + i * 16, y0 = -60;
+      ctx.beginPath();
+      for (let k = 0; k < 10; k++) {
+        const r = k % 2 ? 3.2 : 7.5, a = -Math.PI / 2 + (k * Math.PI) / 5;
+        ctx.lineTo(x0 + r * Math.cos(a), y0 + r * Math.sin(a));
+      }
+      ctx.fill();
+    }
+    ctx.fillStyle = '#b8c0d4';
+    ctx.fillRect(-30, -30, 60, 6);
+    ctx.fillRect(-30, -18, 42, 6);
+    ctx.restore();
+    return;
+  }
+  if (S.prop === 'escova') {
+    ctx.save();
+    ctx.translate(hx, hy);
+    ctx.rotate(-0.5);
+    line(ctx, 8);
+    ctx.fillStyle = '#4ab0d8';
+    ctx.fillRect(-8, -110, 16, 120);
+    ctx.strokeRect(-8, -110, 16, 120);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(-14, -140, 22, 34);
+    ctx.strokeRect(-14, -140, 22, 34);
+    ctx.restore();
+    return;
+  }
   if (S.prop !== 'papel' && S.prop !== 'jornal') return;
   const j = S.prop === 'jornal';
   ctx.save();
@@ -101,6 +165,29 @@ function drawHead(ctx: CanvasRenderingContext2D, L: Look, S: State, cx: number, 
   ctx.translate(-cx, -cy);
   const tx = S.turn * 22; // desloca o rosto ao virar
 
+  if (L.hairStyle === 'coque') {
+    // coque no alto e cabelo caindo atrás das orelhas
+    ctx.fillStyle = L.hair;
+    line(ctx, 11);
+    ctx.beginPath();
+    ctx.ellipse(cx + 10, cy - R - 28, 58, 50, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(cx, cy - 14, R + 14, R - 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+  if (L.earrings) {
+    ctx.fillStyle = '#e8c04a';
+    line(ctx, 6);
+    for (const s of [-1, 1]) {
+      ctx.beginPath();
+      ctx.arc(cx + s * (R - 2), cy + 40, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
   // cabeça
   ctx.beginPath();
   ctx.ellipse(cx, cy, R, R * 1.03, 0, 0, Math.PI * 2);
