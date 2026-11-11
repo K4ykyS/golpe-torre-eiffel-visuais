@@ -18,7 +18,9 @@ export type Look = {
   build: number; // 1 = normal; >1 mais largo
   mustache: 'fina' | 'farta' | 'nenhuma';
   hat?: 'bowler' | 'cartola' | 'fedora' | 'bucket' | null;
-  casual?: 'camiseta' | 'colete'; // roupa do dia a dia (sem terno/gravata)
+  casual?: 'camiseta' | 'colete' | 'avental' | 'capa'; // roupa do dia a dia (sem terno/gravata)
+  beard?: boolean; // barba curta cheia
+  fringeUp?: number; // sobe a franja (px), deixa a testa à mostra
   strap?: boolean; // alça de câmera atravessada no peito
   glasses?: boolean;
   hairStyle: 'liso' | 'calvo' | 'grisalho' | 'coque';
@@ -27,7 +29,8 @@ export type Look = {
   chain?: boolean;
 };
 
-export type Prop = null | 'papel' | 'maleta' | 'jornal' | 'camera' | 'chave' | 'celular' | 'escova';
+export type Prop = null | 'papel' | 'maleta' | 'jornal' | 'camera' | 'chave' | 'celular' | 'escova' | 'maquina' | 'lapis' | 'algodao' | 'maquininha';
+export type Brow = 'normal' | 'raspada' | 'desenhada' | 'borrada';
 
 export type State = {
   expr: Expr;
@@ -46,6 +49,7 @@ export type State = {
   walk?: number; // fase do passo (rad)
   talk?: number; // 0..1 abertura da boca ao falar
   seated?: boolean; // sentado: não desenha as pernas
+  brows?: [Brow, Brow]; // [lado esquerdo da tela, lado direito]
 };
 
 const rad = (d: number) => (d * Math.PI) / 180;

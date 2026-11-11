@@ -40,6 +40,97 @@ function limb(ctx: CanvasRenderingContext2D, sx: number, sy: number, a1: number,
 }
 
 function drawProp(ctx: CanvasRenderingContext2D, S: State, hx: number, hy: number) {
+  if (S.prop === 'maquina') {
+    // máquina de cortar cabelo: corpo preto arredondado, lâmina prateada para cima
+    ctx.save();
+    ctx.translate(hx, hy);
+    ctx.rotate(0.25);
+    line(ctx, 8);
+    ctx.fillStyle = '#2a2836';
+    ctx.beginPath();
+    ctx.roundRect(-22, -120, 44, 140, 18);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#c9ccd6';
+    ctx.fillRect(-26, -142, 52, 24);
+    ctx.strokeRect(-26, -142, 52, 24);
+    line(ctx, 3);
+    for (let i = -20; i <= 20; i += 8) { ctx.beginPath(); ctx.moveTo(i, -142); ctx.lineTo(i, -132); ctx.stroke(); }
+    ctx.fillStyle = '#d94a3a';
+    ctx.beginPath();
+    ctx.arc(0, -70, 7, 0, 7);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.fillRect(-14, -110, 6, 80);
+    ctx.restore();
+    return;
+  }
+  if (S.prop === 'lapis') {
+    ctx.save();
+    ctx.translate(hx, hy);
+    ctx.rotate(0.5);
+    line(ctx, 7);
+    ctx.fillStyle = '#3a2a22';
+    ctx.fillRect(-9, -130, 18, 140);
+    ctx.strokeRect(-9, -130, 18, 140);
+    ctx.fillStyle = '#e8c89a';
+    ctx.beginPath();
+    ctx.moveTo(-9, -130);
+    ctx.lineTo(9, -130);
+    ctx.lineTo(0, -160);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = INK2;
+    ctx.beginPath();
+    ctx.moveTo(-3, -150);
+    ctx.lineTo(3, -150);
+    ctx.lineTo(0, -160);
+    ctx.fill();
+    ctx.restore();
+    return;
+  }
+  if (S.prop === 'algodao') {
+    line(ctx, 7);
+    ctx.fillStyle = '#f6f4fa';
+    for (const [x, y, r] of [[-14, -26, 22], [12, -30, 24], [0, -48, 22], [-4, -18, 20]] as const) {
+      ctx.beginPath();
+      ctx.arc(hx + x, hy + y, r, 0, 7);
+      ctx.fill();
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#f6f4fa';
+    ctx.beginPath();
+    ctx.arc(hx, hy - 30, 26, 0, 7);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(60,50,70,0.55)';
+    ctx.beginPath();
+    ctx.ellipse(hx + 4, hy - 40, 14, 6, 0.3, 0, 7);
+    ctx.fill();
+    return;
+  }
+  if (S.prop === 'maquininha') {
+    // maquininha de cartão, tela virada para o cliente
+    ctx.save();
+    ctx.translate(hx, hy);
+    line(ctx, 8);
+    ctx.fillStyle = '#3a3a48';
+    ctx.beginPath();
+    ctx.roundRect(-44, -150, 88, 160, 16);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#9ad8a8';
+    ctx.fillRect(-32, -136, 64, 44);
+    ctx.strokeRect(-32, -136, 64, 44);
+    ctx.fillStyle = '#16132b';
+    ctx.font = 'bold 22px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('R$ 80', 0, -106);
+    ctx.fillStyle = '#d9d6e4';
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) ctx.fillRect(-28 + c * 22, -78 + r * 22, 14, 14);
+    ctx.restore();
+    return;
+  }
   if (S.prop === 'camera') {
     // câmera DSLR: corpo preto, lente apontando para a direita do cartão
     ctx.save();
@@ -197,19 +288,20 @@ function drawHead(ctx: CanvasRenderingContext2D, L: Look, S: State, cx: number, 
   // cabelo (calota com franja reta)
   ctx.save();
   ctx.clip();
+  const hu = L.fringeUp ?? 0;
   if (L.hairStyle !== 'calvo') {
     ctx.fillStyle = L.hair;
     ctx.beginPath();
     ctx.moveTo(cx - R - 10, cy - R - 10);
     ctx.lineTo(cx + R + 10, cy - R - 10);
-    ctx.lineTo(cx + R + 10, cy - 32);
-    ctx.quadraticCurveTo(cx + 20, cy - 26 + tx * 0.1, cx - R - 10, cy - 38);
+    ctx.lineTo(cx + R + 10, cy - 32 - hu);
+    ctx.quadraticCurveTo(cx + 20, cy - 26 - hu + tx * 0.1, cx - R - 10, cy - 38 - hu);
     ctx.closePath();
     ctx.fill();
     line(ctx, 11);
     ctx.beginPath();
-    ctx.moveTo(cx + R + 10, cy - 32);
-    ctx.quadraticCurveTo(cx + 20, cy - 26, cx - R - 10, cy - 38);
+    ctx.moveTo(cx + R + 10, cy - 32 - hu);
+    ctx.quadraticCurveTo(cx + 20, cy - 26 - hu, cx - R - 10, cy - 38 - hu);
     ctx.stroke();
   } else {
     ctx.fillStyle = L.hair;
@@ -254,12 +346,50 @@ function drawHead(ctx: CanvasRenderingContext2D, L: Look, S: State, cx: number, 
   for (const sgn of [-1, 1]) {
     const ox = cx + tx + sgn * ex;
     // sobrancelha
-    line(ctx, 10, bc);
+    const bm = S.brows ? S.brows[sgn < 0 ? 0 : 1] : 'normal';
     const by = eyeY - 34 + browLift;
-    ctx.beginPath();
-    ctx.moveTo(ox - sgn * 24, by + browTilt * -24);
-    ctx.quadraticCurveTo(ox, by - 8, ox + sgn * 24, by + browTilt * 24 + 3);
-    ctx.stroke();
+    if (bm === 'normal') {
+      line(ctx, 10, bc);
+      ctx.beginPath();
+      ctx.moveTo(ox - sgn * 24, by + browTilt * -24);
+      ctx.quadraticCurveTo(ox, by - 8, ox + sgn * 24, by + browTilt * 24 + 3);
+      ctx.stroke();
+    } else if (bm === 'raspada') {
+      // metade de dentro fica; a de fora vira pele lisa com pontinhos
+      line(ctx, 10, bc);
+      ctx.beginPath();
+      ctx.moveTo(ox - sgn * 24, by + browTilt * -24);
+      ctx.quadraticCurveTo(ox - sgn * 10, by - 6, ox - sgn * 2, by - 5);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(255,226,206,0.7)';
+      ctx.beginPath();
+      ctx.ellipse(ox + sgn * 12, by - 3, 17, 8, 0, 0, 7);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(40,30,50,0.7)';
+      for (let k = 0; k < 7; k++) {
+        ctx.beginPath();
+        ctx.arc(ox + sgn * (2 + (k % 4) * 7), by - 7 + Math.floor(k / 4) * 6 + (k % 2) * 2, 1.6, 0, 7);
+        ctx.fill();
+      }
+    } else if (bm === 'desenhada') {
+      // risco de lápis lá no alto, arqueado e julgador
+      line(ctx, 11, '#2a1e1a');
+      const hy0 = by - 22;
+      ctx.beginPath();
+      ctx.moveTo(ox - sgn * 22, hy0 + 14);
+      ctx.quadraticCurveTo(ox + sgn * 2, hy0 - 26, ox + sgn * 30, hy0 + 2);
+      ctx.stroke();
+    } else {
+      // borrada: mancha cinza esfregada
+      ctx.fillStyle = 'rgba(70,60,80,0.55)';
+      ctx.beginPath();
+      ctx.ellipse(ox + sgn * 4, by - 26, 34, 15, sgn * -0.2, 0, 7);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(40,30,40,0.6)';
+      ctx.beginPath();
+      ctx.ellipse(ox + sgn * 6, by - 30, 22, 7, sgn * -0.3, 0, 7);
+      ctx.fill();
+    }
 
     const closed = open < 0.35;
     if (closed || e === 'encantado' || e === 'sorriso') {
@@ -330,6 +460,27 @@ function drawHead(ctx: CanvasRenderingContext2D, L: Look, S: State, cx: number, 
   // bigode
   const mx = cx + tx * 1.1;
   const my = cy + 76;
+  if (L.beard) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, R - 4, R * 1.03 - 4, 0, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.fillStyle = L.hair;
+    ctx.beginPath();
+    ctx.moveTo(cx - R, cy + 10);
+    ctx.quadraticCurveTo(cx - R + 20, cy + 62, cx + tx - 50, my - 6);
+    ctx.lineTo(cx + tx + 50, my - 6);
+    ctx.quadraticCurveTo(cx + R - 20, cy + 62, cx + R, cy + 10);
+    ctx.lineTo(cx + R, cy + R + 20);
+    ctx.lineTo(cx - R, cy + R + 20);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = L.skin;
+    ctx.beginPath();
+    ctx.ellipse(mx, my + 22, 36, 22, 0, 0, 7);
+    ctx.fill();
+    ctx.restore();
+  }
   if (L.mustache !== 'nenhuma') {
     ctx.fillStyle = L.hairStyle === 'grisalho' ? '#6a6472' : L.hair;
     line(ctx, 6);
@@ -501,6 +652,30 @@ export function drawCharacter2(ctx: CanvasRenderingContext2D, L: Look, S: State,
   ctx.rotate(rad(S.lean) * 0.7);
   ctx.translate(-cx, -hipY);
   const top = 330 + S.bob;
+  if (L.casual === 'capa') {
+    // canelas e sapatos saindo da capa, e a saia da capa por cima dos joelhos
+    for (const sgn of [-1, 1]) {
+      line(ctx, 15);
+      ctx.beginPath();
+      ctx.moveTo(cx + sgn * 50, 860);
+      ctx.lineTo(cx + sgn * 54, 948);
+      ctx.stroke();
+      ctx.fillStyle = INK2;
+      ctx.beginPath();
+      ctx.ellipse(cx + sgn * 66, 958, 36, 15, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = L.suit;
+    line(ctx, 15);
+    ctx.beginPath();
+    ctx.moveTo(cx - bw, hipY - 120);
+    ctx.lineTo(cx + bw, hipY - 120);
+    ctx.lineTo(cx + bw + 40, 880);
+    ctx.quadraticCurveTo(cx, 900, cx - bw - 40, 880);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
   // corpo
   ctx.beginPath();
   ctx.roundRect(cx - bw, top, bw * 2, hipY - top + 8, bw);
@@ -509,7 +684,48 @@ export function drawCharacter2(ctx: CanvasRenderingContext2D, L: Look, S: State,
   ctx.save();
   ctx.clip();
   if (L.casual) {
-    if (L.casual === 'colete') {
+    if (L.casual === 'capa') {
+      // capa de barbeiro listrada com tira de papel no pescoço
+      line(ctx, 4, 'rgba(255,255,255,0.22)');
+      for (let x = -140; x <= 140; x += 34) {
+        ctx.beginPath();
+        ctx.moveTo(cx + x, top);
+        ctx.lineTo(cx + x * 1.1, hipY + 10);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#f4f2ea';
+      ctx.fillRect(cx - 60, top - 4, 120, 26);
+      line(ctx, 7);
+      ctx.strokeRect(cx - 60, top - 4, 120, 26);
+    } else if (L.casual === 'avental') {
+      // camiseta escura + avental de couro com bolso e pente
+      ctx.fillStyle = L.skin;
+      ctx.beginPath();
+      ctx.ellipse(cx, top + 2, 42, 32, 0, 0, Math.PI);
+      ctx.fill();
+      line(ctx, 8);
+      ctx.stroke();
+      ctx.fillStyle = L.vest ?? '#7a4a2a';
+      ctx.beginPath();
+      ctx.roundRect(cx - 84, top + 96, 168, 400, 18);
+      ctx.fill();
+      ctx.stroke();
+      line(ctx, 9, L.vest ?? '#7a4a2a');
+      ctx.beginPath();
+      ctx.moveTo(cx - 70, top + 100);
+      ctx.lineTo(cx - 40, top + 4);
+      ctx.moveTo(cx + 70, top + 100);
+      ctx.lineTo(cx + 40, top + 4);
+      ctx.stroke();
+      line(ctx, 7);
+      ctx.fillStyle = 'rgba(0,0,0,0.18)';
+      ctx.fillRect(cx - 50, top + 170, 100, 64);
+      ctx.strokeRect(cx - 50, top + 170, 100, 64);
+      ctx.fillStyle = '#e8e2d0';
+      ctx.fillRect(cx - 34, top + 150, 12, 40);
+      ctx.fillStyle = '#d94a3a';
+      ctx.fillRect(cx + 12, top + 146, 10, 44);
+    } else if (L.casual === 'colete') {
       // camisa clara com colete de bolsos (turista fotógrafo)
       ctx.fillStyle = L.shirt;
       ctx.beginPath();
@@ -640,6 +856,7 @@ export function drawCharacter2(ctx: CanvasRenderingContext2D, L: Look, S: State,
   // braços (linhas finas) e mãos
   const sy = top + 70;
   for (const [side, a] of [[-1, S.aL], [1, S.aR]] as const) {
+    if (L.casual === 'capa') break; // braços escondidos sob a capa
     const sx = cx + side * (bw - 14);
     const h = limb(ctx, sx, sy, a[0], a[1], 135, 128);
     ctx.fillStyle = INK2;
